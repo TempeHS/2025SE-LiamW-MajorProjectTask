@@ -21,4 +21,7 @@ class Unit:
             location.x -= 300 * dt
         if keys[pygame.K_d]:
             location.x += 300 * dt
+    def mousemovement(self,location,mouselocation):
+        location.y = mouselocation[1] - location.y
+        location.x = mouselocation[0] - location.x
     #@property uncomment when you have properties later

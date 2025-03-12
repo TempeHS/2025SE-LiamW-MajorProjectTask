@@ -21,7 +21,33 @@ class Unit:
             location.x -= 300 * dt
         if keys[pygame.K_d]:
             location.x += 300 * dt
-    def mousemovement(self,location,mouselocation):
-        location.y = mouselocation[1] - location.y
-        location.x = mouselocation[0] - location.x
+    def mousemovement(self,location,mouselocation,dt):
+        if mouselocation == location:
+            pass 
+        else:
+            print(mouselocation)
+            distanceY = mouselocation[1] - location.y
+            distanceX = mouselocation[0] - location.x
+            #unitVectorY = distanceY / abs(distanceY)
+            #unitVectorX = distanceX / abs(distanceX)
+            gradient = distanceY/distanceX
+
+            while not mouselocation == location:
+                print(dt)
+                location.x = 100 * dt + location.x
+                location.y = gradient * 100 *dt + location.y
+                print(location)
+                
+            """
+            print(location)
+            print(distanceX)
+            print(distanceY)
+            print(unitVectorX)
+            print(unitVectorY)
+            newlocationY = location.y + unitVectorY
+            newlocationX = location.x + unitVectorX
+            print(newlocationX)
+            print(newlocationY)
+            location.y = newlocationY 
+            location.x = newlocationX """
     #@property uncomment when you have properties later

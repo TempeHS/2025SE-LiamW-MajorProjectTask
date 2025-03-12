@@ -23,7 +23,7 @@ while running:
         if event.type == MOUSEBUTTONDOWN:
             if event.button == 1:  
                 clicking = True
-                unit.mousemovement(player_pos,location)
+                unit.mousemovement(player_pos,location,dt)
                 unit.spawn(screen,player_pos)
         if event.type == MOUSEBUTTONUP:
             if event.button == 1:

@@ -31,12 +31,10 @@ class Unit:
             #unitVectorY = distanceY / abs(distanceY)
             #unitVectorX = distanceX / abs(distanceX)
             gradient = distanceY/distanceX
-
-            while not mouselocation == location:
-                print(dt)
-                location.x = 100 * dt + location.x
-                location.y = gradient * 100 *dt + location.y
-                print(location)
+            print(dt)
+            location.x += 300 * dt
+            location.y += gradient * 300 * dt
+            print(location)
                 
             """
             print(location)

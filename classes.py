@@ -1,4 +1,6 @@
 import pygame
+import math
+from pathfinding.core.grid import Grid 
 
 class Unit:
     def __init__(self,Owner,HP,Energy,Range,Speed):
@@ -41,17 +43,21 @@ class Unit:
                 location.y = gradient * location.x
             print(location)
             print(gradient)
-                
-            """
-            print(location)
-            print(distanceX)
-            print(distanceY)
-            print(unitVectorX)
-            print(unitVectorY)
-            newlocationY = location.y + unitVectorY
-            newlocationX = location.x + unitVectorX
-            print(newlocationX)
-            print(newlocationY)
-            location.y = newlocationY 
-            location.x = newlocationX """
     #@property uncomment when you have properties later
+
+class Pathfinder:
+    def __init__ (self,Map,screen):
+        self.Map = Map
+        self.grid = Grid(matrix = Map)
+        self.select_surf = pygame.transform.scale(pygame.image.load('assets/mouse_cursor.png').convert_alpha(),(1280/32,1280/32))
+        self.screen = screen
+    def draw_active_cell(self,screen):
+        mouse_pos = pygame.mouse.get_pos()  # gets mouse x,y coordinates
+        row = math.floor(mouse_pos[1] / 32)
+        col = math.floor(mouse_pos[0] / 32)
+        print(f"{row},{col}")
+        #current_cell_value
+        rect = pygame.Rect((col * 32, row * 32),(32,32))
+        screen.blit(self.select_surf, rect)
+    def update(self,screen):
+        self.draw_active_cell(screen)

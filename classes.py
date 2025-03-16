@@ -1,6 +1,8 @@
 import pygame
 import math
-from pathfinding.core.grid import Grid 
+from pathfinding.core.grid import Grid
+from pathfinding.finder.a_star import AStarFinder
+from pathfinding.core.diagonal_movement import DiagonalMovement
 
 class Unit:
     def __init__(self,Owner,HP,Energy,Range,Speed):
@@ -51,13 +53,46 @@ class Pathfinder:
         self.grid = Grid(matrix = Map)
         self.select_surf = pygame.transform.scale(pygame.image.load('assets/mouse_cursor.png').convert_alpha(),(1280/32,1280/32))
         self.screen = screen
+        self.path = []
+
+    def gridIntoInt(self,point):
+        x = point.x
+        y = point.y
+        point = [x,y]
+        return point
+
+
     def draw_active_cell(self,screen):
-        mouse_pos = pygame.mouse.get_pos()  # gets mouse x,y coordinates
+        mouse_pos = pygame.mouse.get_pos()
         row = math.floor(mouse_pos[1] / 32)
         col = math.floor(mouse_pos[0] / 32)
-        print(f"{row},{col}")
-        #current_cell_value
-        rect = pygame.Rect((col * 32, row * 32),(32,32))
-        screen.blit(self.select_surf, rect)
+        current_cell_value = self.Map[row][col]
+        if current_cell_value == 1:
+            rect = pygame.Rect((col * 32, row * 32),(32,32))
+            screen.blit(self.select_surf, rect)
+
+    def create_path(self):
+        startx,starty = [1,1]
+        start = self.grid.node(startx,starty)
+        mouse_pos = pygame.mouse.get_pos()  # gets mouse x,y coordinates
+        endx,endy = math.floor(mouse_pos[0] / 32), math.floor(mouse_pos[1] / 32)
+        end = self.grid.node(endx,endy)
+
+        finder = AStarFinder(diagonal_movement = DiagonalMovement.always)
+        self.path,_ = finder.find_path(start,end,self.grid)
+        self.grid.cleanup()
+
+    def draw_path(self,screen):
+        if self.path:
+            points = []
+            for point in self.path:
+                point = self.gridIntoInt(point)
+                x = (point[0] *32) + 16
+                y = (point[1] *32) + 16
+                points.append((x, y))
+                pygame.draw.circle(screen,'#4a4a4a',(x,y),2)
+            pygame.draw.lines(screen, '#4a4a4a',False, points, 5)
+
     def update(self,screen):
         self.draw_active_cell(screen)
+        self.draw_path(screen)

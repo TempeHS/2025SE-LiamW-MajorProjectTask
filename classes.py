@@ -63,10 +63,25 @@ class Pathfinder:
 
 
     def draw_active_cell(self,screen):
+        notin = True
         mouse_pos = pygame.mouse.get_pos()
         row = math.floor(mouse_pos[1] / 32)
         col = math.floor(mouse_pos[0] / 32)
-        current_cell_value = self.Map[row][col]
+        while notin is True:
+            try:
+                current_cell_value = self.Map[row][col]
+                notin = False
+            except IndexError:
+                #make this better later
+                if row < 0:
+                    row = 0
+                if col < 0:
+                    col = 0
+                if col > 32:
+                    col = 32
+                if row > 32:
+                    row = 32
+
         if current_cell_value == 1:
             rect = pygame.Rect((col * 32, row * 32),(32,32))
             screen.blit(self.select_surf, rect)

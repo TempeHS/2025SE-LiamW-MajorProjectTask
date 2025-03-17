@@ -68,11 +68,6 @@ while running:
     # fill the screen with a color to wipe away anything from last frame
     screen.blit(bg_surf,(0,0))
     pathfinder.update(screen)
-    
-    #add all your main line stuff here
-    unit = Class.Unit("me",10,100,1,1)
-    unit.spawn(screen,player_pos)
-    unit.movement(player_pos,dt)
 
     pygame.display.update()
     # limits FPS to 60

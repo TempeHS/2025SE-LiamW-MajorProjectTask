@@ -100,13 +100,13 @@ class Unit(pygame.sprite.Sprite):
     #@property uncomment when you have properties later
 
 class Pathfinder:
-    def __init__ (self,Map,screen):
+    def __init__ (self,Map,screen,speed):
         self.Map = Map
         self.grid = Grid(matrix = Map)
         self.select_surf = pygame.transform.scale(pygame.image.load('assets/mouse_cursor.png').convert_alpha(),(1280/32,1280/32))
         self.screen = screen
         self.path = []
-        self.character = pygame.sprite.GroupSingle(Unit("me",10,10,10,0.6,self.empty_path))
+        self.character = pygame.sprite.GroupSingle(Unit("me",10,10,10,speed,self.empty_path))
 
     def empty_path(self):
         self.path = []

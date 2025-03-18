@@ -21,7 +21,7 @@ class Unit(pygame.sprite.Sprite):
         self.empty_path = empty_path
     
     @classmethod
-    def spawn(self,screen,location):
+    def spawn(self,screen,location): #this is not used
         pygame.draw.circle(screen, "red", location, 30)
     
     def get_coord(self):
@@ -67,38 +67,6 @@ class Unit(pygame.sprite.Sprite):
         self.check_collisions()
         self.rect.center = self.pos
 
-    def movement(self,location,dt):
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_w]:
-            location.y -= 300 * dt
-        if keys[pygame.K_s]:
-            location.y += 300 * dt
-        if keys[pygame.K_a]:
-            location.x -= 300 * dt
-        if keys[pygame.K_d]:
-            location.x += 300 * dt
-    def mousemovement(self,location,mouselocation,dt):
-        if mouselocation == location:
-            pass 
-        else:
-            print(mouselocation)
-            distanceY = mouselocation[1] - location.y
-            distanceX = mouselocation[0] - location.x
-            #unitVectorY = distanceY / abs(distanceY)
-            #unitVectorX = distanceX / abs(distanceX)
-            gradient = distanceY/distanceX
-            if distanceX > 0:
-                location.x += 300 * dt
-            else:
-                location.x -= 300 * dt
-            if location.y == mouselocation[1]:
-                pass
-            else:
-                location.y = gradient * location.x
-            print(location)
-            print(gradient)
-    #@property uncomment when you have properties later
-
 class Pathfinder:
     def __init__ (self,Map,screen,speed):
         self.Map = Map
@@ -116,7 +84,6 @@ class Pathfinder:
         y = point.y
         point = [x,y]
         return point
-
 
     def draw_active_cell(self,screen):
         notin = True
@@ -163,7 +130,8 @@ class Pathfinder:
                 y = (point[1] *32) + 16
                 points.append((x, y))
                 pygame.draw.circle(screen,'#4a4a4a',(x,y),2)
-            pygame.draw.lines(screen, '#4a4a4a',False, points, 5)
+            if not len(points) == 1:
+                pygame.draw.lines(screen, '#4a4a4a',False, points, 5)
 
     def update(self,screen):
         self.draw_active_cell(screen)

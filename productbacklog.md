@@ -1,7 +1,7 @@
 # Product Back Log List
 
-1. set up class for a unit
-2. create the movement system (move to mouse click)
+1. ~~set up class for a unit~~
+2. ~~create the movement system (move to mouse click)~~
 3. create structure class 
 4. worker, child class from unit class
 5. resource class 

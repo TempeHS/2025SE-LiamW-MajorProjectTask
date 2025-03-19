@@ -4,12 +4,17 @@ from pathfinding.core.grid import Grid
 from pathfinding.finder.a_star import AStarFinder
 from pathfinding.core.diagonal_movement import DiagonalMovement
 
-class Unit(pygame.sprite.Sprite):
-    def __init__(self,Owner,HP,Energy,Range,Speed,empty_path):
+class Object(pygame.sprite.Sprite):
+    def __init__(self,Owner,HP,Energy,Range,Speed,empty_path,x,y,Type):
         super().__init__()
-        self.image = pygame.image.load('assets/playerstandin.png').convert_alpha()
-        self.rect =  self.image.get_rect(center = (60,60))
-        self.pos = self.rect.center
+        if Type == 0:
+            self.image = pygame.image.load('assets/playerstandin.png').convert_alpha()
+            self.rect =  self.image.get_rect(center = (x,y))
+            self.pos = self.rect.center
+        elif Type == 1:
+            self.image = pygame.image.load('assets/structurestandin.png').convert_alpha()
+            self.rect =  self.image.get_rect(center = (x,y))
+            self.pos = self.rect.center
         self.Owner = Owner
         self.HP = HP
         self.Energy = Energy
@@ -67,14 +72,16 @@ class Unit(pygame.sprite.Sprite):
         self.check_collisions()
         self.rect.center = self.pos
 
-class Pathfinder:
-    def __init__ (self,Map,screen,speed):
+class Pathfinder(Object):
+    def __init__ (self,Owner,HP,Energy,Range,Speed,Map,screen,x,y,Type):
+        super().__init__(Owner,HP,Energy,Range,Speed,self.empty_path,x,y,Type)
         self.Map = Map
         self.grid = Grid(matrix = Map)
         self.select_surf = pygame.transform.scale(pygame.image.load('assets/mouse_cursor.png').convert_alpha(),(1280/32,1280/32))
+        self.select_point = pygame.transform.scale(pygame.image.load('assets/path point.png').convert_alpha(),(1280/32,1280/32))
         self.screen = screen
         self.path = []
-        self.character = pygame.sprite.GroupSingle(Unit("me",10,10,10,speed,self.empty_path))
+        self.character = pygame.sprite.GroupSingle(Object(Owner,HP,Energy,Range,Speed,self.empty_path,x,y,Type))
 
     def empty_path(self):
         self.path = []
@@ -132,9 +139,20 @@ class Pathfinder:
                 pygame.draw.circle(screen,'#4a4a4a',(x,y),2)
             if not len(points) == 1:
                 pygame.draw.lines(screen, '#4a4a4a',False, points, 5)
+                tempx,tempy = points[len(points)-1]
+                screen.blit(self.select_point,(tempx - 16,tempy-16))
 
     def update(self,screen):
         self.draw_active_cell(screen)
         self.draw_path(screen)
         self.character.update()
         self.character.draw(screen)
+
+class Structure(Pathfinder):
+    def __init__(self,Owner,HP,Energy,Range,Map,screen,x,y):
+        super().__init__(Owner,HP,Energy,Range,0,Map,screen,x,y,1)
+
+class Unit(Pathfinder):
+    def __init__(self,Owner,HP,Energy,Range,Speed,Map,screen,x,y):
+        super().__init__(Owner,HP,Energy,Range,Speed,Map,screen,x,y,0)
+

@@ -50,7 +50,8 @@ Map = [[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]]
 
-pathfinder = Class.Pathfinder(Map,screen, 2)
+Structure = Class.Structure("Me",100,100,0,Map,screen,100,100)
+Unit = Class.Unit("Me",100,100,0,2,Map,screen,60,60)
 
 player_pos = pygame.Vector2(screen.get_width() / 2, screen.get_height() / 2)
 
@@ -63,11 +64,13 @@ while running:
             running = False
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:  
-                pathfinder.create_path()
+                Unit.create_path()
+                Structure.create_path()
     
     # fill the screen with a color to wipe away anything from last frame
     screen.blit(bg_surf,(0,0))
-    pathfinder.update(screen)
+    Unit.update(screen)
+    Structure.update(screen)
 
     pygame.display.update()
     # limits FPS to 60

@@ -78,7 +78,7 @@ class Pathfinder(Object):
         self.Map = Map
         self.grid = Grid(matrix = Map)
         self.select_surf = pygame.transform.scale(pygame.image.load('assets/mouse_cursor.png').convert_alpha(),(1280/32,1280/32))
-        self.select_point = pygame.transform.scale(pygame.image.load('assets/path point.png').convert_alpha(),(1280/32,1280/32))
+        self.select_point = pygame.transform.scale(pygame.image.load('assets/path_point.png').convert_alpha(),(1280/32,1280/32))
         self.screen = screen
         self.path = []
         self.character = pygame.sprite.GroupSingle(Object(Owner,HP,Energy,Range,Speed,self.empty_path,x,y,Type))

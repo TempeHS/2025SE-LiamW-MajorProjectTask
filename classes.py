@@ -15,6 +15,10 @@ class Object(pygame.sprite.Sprite):
             self.image = pygame.image.load('assets/structurestandin.png').convert_alpha()
             self.rect =  self.image.get_rect(center = (x,y))
             self.pos = self.rect.center
+        elif Type == 2:
+            self.image = pygame.image.load('assets/structurestandinactive.png').convert_alpha()
+            self.rect =  self.image.get_rect(center = (x,y))
+            self.pos = self.rect.center
         self.Owner = Owner
         self.HP = HP
         self.Energy = Energy
@@ -151,7 +155,18 @@ class Pathfinder(Object):
 class Structure(Pathfinder):
     def __init__(self,Owner,HP,Energy,Range,Map,screen,x,y):
         super().__init__(Owner,HP,Energy,Range,0,Map,screen,x,y,1)
+        self.queue = [0,0,0,0,0]
+    
+    def production(self,time):
+        self.queue[0] += time
+        print(self.queue[0])
 
+    def update(self,screen,time):
+        self.draw_active_cell(screen)
+        self.draw_path(screen)
+        self.character.update()
+        self.character.draw(screen)
+        self.production(time)
 class Unit(Pathfinder):
     def __init__(self,Owner,HP,Energy,Range,Speed,Map,screen,x,y):
         super().__init__(Owner,HP,Energy,Range,Speed,Map,screen,x,y,0)

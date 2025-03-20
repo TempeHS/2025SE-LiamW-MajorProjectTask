@@ -66,11 +66,11 @@ while running:
             if event.button == 1:  
                 Unit.create_path()
                 Structure.create_path()
-    
+
     # fill the screen with a color to wipe away anything from last frame
     screen.blit(bg_surf,(0,0))
     Unit.update(screen)
-    Structure.update(screen)
+    Structure.update(screen,dt)
 
     pygame.display.update()
     # limits FPS to 60

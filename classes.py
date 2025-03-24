@@ -1,4 +1,5 @@
 import pygame
+from pygame.locals import *
 import math
 from pathfinding.core.grid import Grid
 from pathfinding.finder.a_star import AStarFinder
@@ -157,16 +158,20 @@ class Structure(Pathfinder):
         super().__init__(Owner,HP,Energy,Range,0,Map,screen,x,y,1)
         self.queue = [0,0,0,0,0]
     
-    def production(self,time):
-        self.queue[0] += time
-        print(self.queue[0])
+    def production(self,time,productionflag):
+        for slot in productionflag:
+            if slot == 1:
+                self.queue[productionflag.index(slot)] += time
+                print(self.queue)
 
-    def update(self,screen,time):
+    def update(self,screen,time,productionflag):
         self.draw_active_cell(screen)
         self.draw_path(screen)
         self.character.update()
         self.character.draw(screen)
-        self.production(time)
+        if 1 in productionflag:
+            self.production(time,productionflag)
+
 class Unit(Pathfinder):
     def __init__(self,Owner,HP,Energy,Range,Speed,Map,screen,x,y):
         super().__init__(Owner,HP,Energy,Range,Speed,Map,screen,x,y,0)

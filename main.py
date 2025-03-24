@@ -14,6 +14,7 @@ clock = pygame.time.Clock()
 running = True
 dt = 0
 clicking = False
+proflag = [0,0,0,0,0]
 
 #Map
 bg_surf = pygame.transform.scale(pygame.image.load('assets/backgroundstandin.png').convert(),(1280,720))
@@ -63,14 +64,29 @@ while running:
         if event.type == pygame.QUIT:
             running = False
         if event.type == pygame.MOUSEBUTTONDOWN:
+            #all mouse inputs
             if event.button == 1:  
                 Unit.create_path()
                 Structure.create_path()
+        if event.type == pygame.KEYDOWN:
+            #all keyboard inputs
+            if event.key == pygame.K_b:
+                for slot in proflag:
+                    if slot == 0:
+                        print(proflag.index(slot))
+                        proflag[proflag.index(slot)] = 1
+                        break
+                
+            if event.key == pygame.K_c:
+                for slot in reversed(proflag):
+                    if slot == 1:
+                        proflag[proflag.index(slot)]  = 0
+                        break
 
     # fill the screen with a color to wipe away anything from last frame
     screen.blit(bg_surf,(0,0))
     Unit.update(screen)
-    Structure.update(screen,dt)
+    Structure.update(screen,dt,proflag)
 
     pygame.display.update()
     # limits FPS to 60

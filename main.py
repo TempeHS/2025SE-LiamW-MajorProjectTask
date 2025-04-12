@@ -51,8 +51,12 @@ Map = [[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]]
 
-Structure = Class.Structure("Me",100,100,0,Map,screen,100,100)
-Unit = Class.Unit("Me",100,100,0,2,Map,screen,60,60)
+structurelist = []
+unitlist = []
+Structure = Class.Structure("structure","Me",100,100,0,Map,screen,100,100)
+Unit = Class.Unit("unit","Me",100,100,0,2,Map,screen,60,60)
+structurelist.append(Structure)
+unitlist.append(Unit)
 
 player_pos = pygame.Vector2(screen.get_width() / 2, screen.get_height() / 2)
 
@@ -63,25 +67,19 @@ while running:
         location = [mx, my]
         if event.type == pygame.QUIT:
             running = False
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            #all mouse inputs
-            if event.button == 1:  
-                Unit.create_path()
-                Structure.create_path()
-        if event.type == pygame.KEYDOWN:
-            #all keyboard inputs
-            if event.key == pygame.K_b:
-                for slot in proflag:
-                    if slot == 0:
-                        print(proflag.index(slot))
-                        proflag[proflag.index(slot)] = 1
-                        break
-                
-            if event.key == pygame.K_c:
-                for slot in reversed(proflag):
-                    if slot == 1:
-                        proflag[proflag.index(slot)]  = 0
-                        break
+        for structures,units in zip(structurelist,unitlist):
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                #all mouse inputs
+                if event.button == 1:  
+                    units.create_path()
+                    structures.create_path()
+            if event.type == pygame.KEYDOWN:
+                #all keyboard inputs
+                #queue
+                if event.key == pygame.K_b:
+                    structures.startqueue(proflag)
+                if event.key == pygame.K_c:
+                    structures.stopqueue(proflag)
 
     # fill the screen with a color to wipe away anything from last frame
     screen.blit(bg_surf,(0,0))

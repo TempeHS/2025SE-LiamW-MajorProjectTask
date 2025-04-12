@@ -6,7 +6,7 @@ from pathfinding.finder.a_star import AStarFinder
 from pathfinding.core.diagonal_movement import DiagonalMovement
 
 class Object(pygame.sprite.Sprite):
-    def __init__(self,Owner,HP,Energy,Range,Speed,empty_path,x,y,Type):
+    def __init__(self,name,Owner,HP,Energy,Range,Speed,empty_path,x,y,Type):
         super().__init__()
         if Type == 0:
             self.image = pygame.image.load('assets/playerstandin.png').convert_alpha()
@@ -20,6 +20,7 @@ class Object(pygame.sprite.Sprite):
             self.image = pygame.image.load('assets/structurestandinactive.png').convert_alpha()
             self.rect =  self.image.get_rect(center = (x,y))
             self.pos = self.rect.center
+        self.name = name
         self.Owner = Owner
         self.HP = HP
         self.Energy = Energy
@@ -78,15 +79,15 @@ class Object(pygame.sprite.Sprite):
         self.rect.center = self.pos
 
 class Pathfinder(Object):
-    def __init__ (self,Owner,HP,Energy,Range,Speed,Map,screen,x,y,Type):
-        super().__init__(Owner,HP,Energy,Range,Speed,self.empty_path,x,y,Type)
+    def __init__ (self,name,Owner,HP,Energy,Range,Speed,Map,screen,x,y,Type):
+        super().__init__(name,Owner,HP,Energy,Range,Speed,self.empty_path,x,y,Type)
         self.Map = Map
         self.grid = Grid(matrix = Map)
         self.select_surf = pygame.transform.scale(pygame.image.load('assets/mouse_cursor.png').convert_alpha(),(1280/32,1280/32))
         self.select_point = pygame.transform.scale(pygame.image.load('assets/path_point.png').convert_alpha(),(1280/32,1280/32))
         self.screen = screen
         self.path = []
-        self.character = pygame.sprite.GroupSingle(Object(Owner,HP,Energy,Range,Speed,self.empty_path,x,y,Type))
+        self.character = pygame.sprite.GroupSingle(Object(name,Owner,HP,Energy,Range,Speed,self.empty_path,x,y,Type))
 
     def empty_path(self):
         self.path = []
@@ -154,15 +155,33 @@ class Pathfinder(Object):
         self.character.draw(screen)
 
 class Structure(Pathfinder):
-    def __init__(self,Owner,HP,Energy,Range,Map,screen,x,y):
-        super().__init__(Owner,HP,Energy,Range,0,Map,screen,x,y,1)
+    def __init__(self,name,Owner,HP,Energy,Range,Map,screen,x,y):
+        super().__init__(name,Owner,HP,Energy,Range,0,Map,screen,x,y,1)
         self.queue = [0,0,0,0,0]
     
     def production(self,time,productionflag):
+        n = 0
         for slot in productionflag:
             if slot == 1:
-                self.queue[productionflag.index(slot)] += time
+                self.queue[n] += time
                 print(self.queue)
+            n += 1
+    
+    def startqueue(self,proflag):
+        for slot in proflag:
+            if slot == 0:
+                print(proflag.index(slot))
+                proflag[proflag.index(slot)] = 1
+                break
+    def stopqueue(self,proflag):
+        n = 4
+        for slot in reversed(proflag):
+            if slot == 1:
+                self.queue[n] = 0
+                proflag[n]  = 0
+                break
+            n -= 1
+
 
     def update(self,screen,time,productionflag):
         self.draw_active_cell(screen)
@@ -173,6 +192,6 @@ class Structure(Pathfinder):
             self.production(time,productionflag)
 
 class Unit(Pathfinder):
-    def __init__(self,Owner,HP,Energy,Range,Speed,Map,screen,x,y):
-        super().__init__(Owner,HP,Energy,Range,Speed,Map,screen,x,y,0)
+    def __init__(self,name,Owner,HP,Energy,Range,Speed,Map,screen,x,y):
+        super().__init__(name,Owner,HP,Energy,Range,Speed,Map,screen,x,y,0)
 

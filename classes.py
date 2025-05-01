@@ -181,15 +181,37 @@ class Structure(Pathfinder):
                 proflag[n]  = 0
                 break
             n -= 1
+    def createunit(self,proflag,Map,screen):
+        #placeholder build timer
+        unitTime = 8
+        if self.queue[0] >= unitTime:
+            Queue = self.queue
+            newqueue = [0,0,0,0,0]
+            newflag = [0,0,0,0,0]
+            for slot in Queue:
+                num = Queue.index(slot) + 1
+                newqueue[Queue.index(slot)] = Queue[num]
+            Queue = newqueue
+            for slot in proflag:
+                num = proflag.index(slot) + 1
+                newflag[proflag.index(slot)] = proflag[num]
+            proflag = newflag
+            Queue[4] = 0
+            self.queue = newqueue
+            Man = Unit("man","Me",100,100,0,2,Map,screen,300,300)
+            return (Man, proflag)
 
 
-    def update(self,screen,time,productionflag):
+    def update(self,screen,time,productionflag,Map):
         self.draw_active_cell(screen)
         self.draw_path(screen)
         self.character.update()
         self.character.draw(screen)
         if 1 in productionflag:
             self.production(time,productionflag)
+        Man = self.createunit(productionflag,Map,screen)
+        if Man is not None:
+            return Man[0], Man[1]
 
 class Unit(Pathfinder):
     def __init__(self,name,Owner,HP,Energy,Range,Speed,Map,screen,x,y):

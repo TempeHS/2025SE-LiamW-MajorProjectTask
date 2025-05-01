@@ -83,8 +83,13 @@ while running:
 
     # fill the screen with a color to wipe away anything from last frame
     screen.blit(bg_surf,(0,0))
-    Unit.update(screen)
-    Structure.update(screen,dt,proflag)
+    for structures,units in zip(structurelist,unitlist):
+        units.update(screen)
+        newUnit = structures.update(screen,dt,proflag,Map)
+        if newUnit is not None:
+            proflag = newUnit[1]
+            unitlist.append(newUnit[0])
+            print(unitlist)
 
     pygame.display.update()
     # limits FPS to 60

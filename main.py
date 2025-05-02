@@ -51,12 +51,12 @@ Map = [[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]]
 
-structurelist = []
-unitlist = []
+structurelist = pygame.sprite.Group()
+unitlist = pygame.sprite.Group()
 Structure = Class.Structure("structure","Me",100,100,0,Map,screen,100,100)
 Unit = Class.Unit("unit","Me",100,100,0,2,Map,screen,60,60)
-structurelist.append(Structure)
-unitlist.append(Unit)
+structurelist.add(Structure)
+unitlist.add(Unit)
 
 player_pos = pygame.Vector2(screen.get_width() / 2, screen.get_height() / 2)
 
@@ -67,28 +67,31 @@ while running:
         location = [mx, my]
         if event.type == pygame.QUIT:
             running = False
-        for structures,units in zip(structurelist,unitlist):
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                #all mouse inputs
-                if event.button == 1:  
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            #all mouse inputs
+            if event.button == 1:  
+                for units in unitlist:
                     units.create_path()
+                for structures in structurelist:
                     structures.create_path()
-            if event.type == pygame.KEYDOWN:
-                #all keyboard inputs
-                #queue
-                if event.key == pygame.K_b:
+        if event.type == pygame.KEYDOWN:
+            #all keyboard inputs
+            #queue
+            if event.key == pygame.K_b:
+                for structures in structurelist:
                     structures.startqueue(proflag)
-                if event.key == pygame.K_c:
+            if event.key == pygame.K_c:
+                for structures in structurelist:
                     structures.stopqueue(proflag)
 
     # fill the screen with a color to wipe away anything from last frame
     screen.blit(bg_surf,(0,0))
     for structures,units in zip(structurelist,unitlist):
-        units.update(screen)
+        unitlist.update(screen)
         newUnit = structures.update(screen,dt,proflag,Map)
         if newUnit is not None:
             proflag = newUnit[1]
-            unitlist.append(newUnit[0])
+            unitlist.add(newUnit[0])
             print(unitlist)
 
     pygame.display.update()

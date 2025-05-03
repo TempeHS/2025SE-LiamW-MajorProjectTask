@@ -53,10 +53,13 @@ Map = [[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 
 structurelist = pygame.sprite.Group()
 unitlist = pygame.sprite.Group()
-Structure = Class.Structure("structure","Me",100,100,0,Map,screen,100,100)
-Unit = Class.Unit("unit","Me",100,100,0,2,Map,screen,60,60)
+resourcelist = pygame.sprite.Group()
+Structure = Class.Structure("structure","Me",100,100,0,Map,screen,200,200)
+Unit = Class.Unit("unit","Me",100,100,0,2,Map,screen,150,150)
+Resource = Class.Resource("resource","Me",Map,screen,100,100,4,10)
 structurelist.add(Structure)
 unitlist.add(Unit)
+resourcelist.add(Resource)
 
 player_pos = pygame.Vector2(screen.get_width() / 2, screen.get_height() / 2)
 
@@ -86,8 +89,9 @@ while running:
 
     # fill the screen with a color to wipe away anything from last frame
     screen.blit(bg_surf,(0,0))
-    for structures,units in zip(structurelist,unitlist):
+    for structures,units,resource in zip(structurelist,unitlist,resourcelist):
         unitlist.update(screen)
+        resourcelist.update(screen)
         newUnit = structures.update(screen,dt,proflag,Map)
         if newUnit is not None:
             proflag = newUnit[1]

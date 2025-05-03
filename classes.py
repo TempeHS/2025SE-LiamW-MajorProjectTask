@@ -21,6 +21,14 @@ class Object(pygame.sprite.Sprite):
             self.image = pygame.image.load('assets/structurestandinactive.png').convert_alpha()
             self.rect =  self.image.get_rect(center = (x,y))
             self.pos = self.rect.center
+        elif Type == 3:
+            self.image = pygame.image.load('assets/workerstandin.png').convert_alpha()
+            self.rect =  self.image.get_rect(center = (x,y))
+            self.pos = self.rect.center
+        elif Type == 4:
+            self.image = pygame.image.load('assets/resourcestandin.png').convert_alpha()
+            self.rect =  self.image.get_rect(center = (x,y))
+            self.pos = self.rect.center
         self.name = name
         self.Owner = Owner
         self.HP = HP
@@ -226,10 +234,7 @@ class Worker(Unit):
         self.pos = self.rect.center
         self.Speed = 1.5  # Workers are slower than units
 
-class Resource(Object):
-    def __init__(self,name,Owner,x,y,Type,resources):
-        super().__init__(name,Owner,0,0,0,0,self.empty_path,x,y,Type)
-        self.image = pygame.image.load('assets/resourcestandin.png').convert_alpha()
-        self.rect =  self.image.get_rect(center = (x,y))
-        self.pos = self.rect.center
+class Resource(Pathfinder):
+    def __init__(self,name,Owner,Map,screen,x,y,Type,resources):
+        super().__init__(name,Owner,0,0,0,0,Map,screen,x,y,Type)
         self.resources = resources

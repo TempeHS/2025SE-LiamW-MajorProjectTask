@@ -8,6 +8,7 @@ from pathfinding.core.diagonal_movement import DiagonalMovement
 class Object(pygame.sprite.Sprite):
     def __init__(self,name,Owner,HP,Energy,Range,Speed,empty_path,x,y,Type):
         super().__init__()
+        #need to get rid of this and put it in individual classes
         if Type == 0:
             self.image = pygame.image.load('assets/playerstandin.png').convert_alpha()
             self.rect =  self.image.get_rect(center = (x,y))
@@ -217,3 +218,18 @@ class Unit(Pathfinder):
     def __init__(self,name,Owner,HP,Energy,Range,Speed,Map,screen,x,y):
         super().__init__(name,Owner,HP,Energy,Range,Speed,Map,screen,x,y,0)
 
+class Worker(Unit):
+    def __init__(self,name,Owner,HP,Energy,Range,Speed,Map,screen,x,y):
+        super().__init__(name,Owner,HP,Energy,Range,Speed,Map,screen,x,y)
+        self.image = pygame.image.load('assets/workerstandin.png').convert_alpha()
+        self.rect =  self.image.get_rect(center = (x,y))
+        self.pos = self.rect.center
+        self.Speed = 1.5  # Workers are slower than units
+
+class Resource(Object):
+    def __init__(self,name,Owner,x,y,Type,resources):
+        super().__init__(name,Owner,0,0,0,0,self.empty_path,x,y,Type)
+        self.image = pygame.image.load('assets/resourcestandin.png').convert_alpha()
+        self.rect =  self.image.get_rect(center = (x,y))
+        self.pos = self.rect.center
+        self.resources = resources

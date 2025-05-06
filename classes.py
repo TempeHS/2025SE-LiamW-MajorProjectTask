@@ -223,18 +223,19 @@ class Structure(Pathfinder):
             return Man[0], Man[1]
 
 class Unit(Pathfinder):
-    def __init__(self,name,Owner,HP,Energy,Range,Speed,Map,screen,x,y):
-        super().__init__(name,Owner,HP,Energy,Range,Speed,Map,screen,x,y,0)
+    def __init__(self,name,Owner,HP,Energy,Range,Speed,Map,screen,x,y,Type):
+        super().__init__(name,Owner,HP,Energy,Range,Speed,Map,screen,x,y,Type)
+        self.Type = 0
 
 class Worker(Unit):
     def __init__(self,name,Owner,HP,Energy,Range,Speed,Map,screen,x,y):
-        super().__init__(name,Owner,HP,Energy,Range,Speed,Map,screen,x,y)
-        self.image = pygame.image.load('assets/workerstandin.png').convert_alpha()
-        self.rect =  self.image.get_rect(center = (x,y))
-        self.pos = self.rect.center
+        super().__init__(name,Owner,HP,Energy,Range,Speed,Map,screen,x,y,3)
         self.Speed = 1.5  # Workers are slower than units
+    
+    def draw_active_cell(self, screen):
+        return super().draw_active_cell(screen)
 
 class Resource(Pathfinder):
-    def __init__(self,name,Owner,Map,screen,x,y,Type,resources):
-        super().__init__(name,Owner,0,0,0,0,Map,screen,x,y,Type)
+    def __init__(self,name,Owner,Map,screen,x,y,resources):
+        super().__init__(name,Owner,0,0,0,0,Map,screen,x,y,4)
         self.resources = resources

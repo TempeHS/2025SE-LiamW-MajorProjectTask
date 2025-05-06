@@ -54,12 +54,14 @@ Map = [[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 structurelist = pygame.sprite.Group()
 unitlist = pygame.sprite.Group()
 resourcelist = pygame.sprite.Group()
-Structure = Class.Structure("structure","Me",100,100,0,Map,screen,200,200)
-Unit = Class.Unit("unit","Me",100,100,0,2,Map,screen,150,150)
-Resource = Class.Resource("resource","Me",Map,screen,100,100,4,10)
+Structure = Class.Structure("structure","Me",100,100,0,Map,screen,250,250)
+Unit = Class.Unit("unit","Me",100,100,0,2,Map,screen,300,300,0)
+Resource = Class.Resource("resource","Me",Map,screen,100,100,10)
+Worker = Class.Worker("worker","Me",100,100,0,2,Map,screen,200,200)
 structurelist.add(Structure)
 unitlist.add(Unit)
 resourcelist.add(Resource)
+unitlist.add(Worker)
 
 player_pos = pygame.Vector2(screen.get_width() / 2, screen.get_height() / 2)
 

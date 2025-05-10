@@ -68,7 +68,7 @@ class Object(pygame.sprite.Sprite):
             start = pygame.math.Vector2(self.pos)
             end = pygame.math.Vector2(self.collision_rects[0].center)
             self.direction = (end - start).normalize()
-            print(self.direction)
+            #print(self.direction)
         else:
             self.direction = pygame.math.Vector2(0,0)
             self.path = []
@@ -162,6 +162,7 @@ class Pathfinder(Object):
         self.draw_path(screen)
         self.character.update()
         self.character.draw(screen)
+        pygame.draw.rect(screen, (255, 0, 0), self.rect, 2)  # Draw the red rectangle around the object
 
 class Structure(Pathfinder):
     def __init__(self,name,Owner,HP,Energy,Range,Map,screen,x,y):
@@ -207,7 +208,7 @@ class Structure(Pathfinder):
             proflag = newflag
             Queue[4] = 0
             self.queue = newqueue
-            Man = Unit("man","Me",100,100,0,2,Map,screen,300,300)
+            Man = Unit("man","Me",100,100,0,2,Map,screen,300,300,0)
             return (Man, proflag)
 
 
@@ -234,6 +235,23 @@ class Worker(Unit):
     
     def draw_active_cell(self, screen):
         return super().draw_active_cell(screen)
+    
+    def objectcollisioncheck(self,resourcelist):
+        for resource in resourcelist:
+            #print(f"Worker rect: {self.rect}, Resource rect: {resource.rect}")
+            if self.rect.colliderect(resource):
+                print("Collision with resource!")
+                # Handle collision with resource here
+                # For example, you can stop the unit or perform some action
+                break
+    def update(self,screen,resourcelist):
+        self.draw_active_cell(screen)
+        self.draw_path(screen)
+        self.character.update()
+        self.objectcollisioncheck(resourcelist)
+        self.character.draw(screen)
+        print(f"Updated rect: {self.rect.center}, Position: {self.pos}")
+
 
 class Resource(Pathfinder):
     def __init__(self,name,Owner,Map,screen,x,y,resources):

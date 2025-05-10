@@ -82,10 +82,11 @@ class Object(pygame.sprite.Sprite):
         else:
             self.empty_path()
 
-    def update(self):
+    def update(self,screen):
         self.pos += self.direction * self.Speed
         self.check_collisions()
         self.rect.center = self.pos
+        pygame.draw.rect(screen, (255, 0, 0), self.rect, 2)
 
 class Pathfinder(Object):
     def __init__ (self,name,Owner,HP,Energy,Range,Speed,Map,screen,x,y,Type):
@@ -160,9 +161,8 @@ class Pathfinder(Object):
     def update(self,screen):
         self.draw_active_cell(screen)
         self.draw_path(screen)
-        self.character.update()
+        self.character.update(screen)
         self.character.draw(screen)
-        pygame.draw.rect(screen, (255, 0, 0), self.rect, 2)  # Draw the red rectangle around the object
 
 class Structure(Pathfinder):
     def __init__(self,name,Owner,HP,Energy,Range,Map,screen,x,y):
@@ -215,7 +215,7 @@ class Structure(Pathfinder):
     def update(self,screen,time,productionflag,Map):
         self.draw_active_cell(screen)
         self.draw_path(screen)
-        self.character.update()
+        self.character.update(screen)
         self.character.draw(screen)
         if 1 in productionflag:
             self.production(time,productionflag)
@@ -239,18 +239,20 @@ class Worker(Unit):
     def objectcollisioncheck(self,resourcelist):
         for resource in resourcelist:
             #print(f"Worker rect: {self.rect}, Resource rect: {resource.rect}")
-            if self.rect.colliderect(resource):
-                print("Collision with resource!")
-                # Handle collision with resource here
-                # For example, you can stop the unit or perform some action
-                break
+            for character in self.character:
+                #print(f"Character rect: {character.rect}")
+                if character.rect.colliderect(resource):
+                    print("Collision with resource!")
+                    # Handle collision with resource here
+                    # For example, you can stop the unit or perform some action
+                    break
     def update(self,screen,resourcelist):
         self.draw_active_cell(screen)
         self.draw_path(screen)
-        self.character.update()
+        self.character.update(screen)
         self.objectcollisioncheck(resourcelist)
         self.character.draw(screen)
-        print(f"Updated rect: {self.rect.center}, Position: {self.pos}")
+        #print(f"Updated rect: {self.rect.center}, Position: {self.pos}")
 
 
 class Resource(Pathfinder):

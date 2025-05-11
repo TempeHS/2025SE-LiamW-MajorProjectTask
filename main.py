@@ -94,7 +94,7 @@ while running:
 
     # fill the screen with a color to wipe away anything from last frame
     screen.blit(bg_surf,(0,0))
-    for structures,units,resource,worker in zip(structurelist,unitlist,resourcelist,workerlist):
+    for structures,units,resource,worker in zip(structurelist,unitlist,resourcelist,workerlist): #fix this cause it means when there are no units it will break
         workerlist.update(screen,resourcelist)
         unitlist.update(screen)
         resourcelist.update(screen)

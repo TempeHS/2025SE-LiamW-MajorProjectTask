@@ -232,20 +232,38 @@ class Worker(Unit):
     def __init__(self,name,Owner,HP,Energy,Range,Speed,Map,screen,x,y):
         super().__init__(name,Owner,HP,Energy,Range,Speed,Map,screen,x,y,3)
         self.Speed = 1.5  # Workers are slower than units
+        self.mining_progress = 0
+        self.has_mined = False
     
     def draw_active_cell(self, screen):
         return super().draw_active_cell(screen)
     
     def objectcollisioncheck(self,resourcelist):
-        for resource in resourcelist:
-            #print(f"Worker rect: {self.rect}, Resource rect: {resource.rect}")
+        if not self.has_mined:
+            for resource in resourcelist:
+                #print(f"Worker rect: {self.rect}, Resource rect: {resource.rect}")
+                for character in self.character:
+                    #print(f"Character rect: {character.rect}")
+                    if character.rect.colliderect(resource):
+                        print("Collision with resource!")
+                        character.direction = pygame.math.Vector2(0,0)
+                        self.mining()
+                        self.has_mined = True
+                        # Handle collision with resource here
+                        # For example, you can stop the unit or perform some action
+                        break
+                    else:
+                        self.mining_progress = 0
+    def mining(self):
+        self.mining_progress += 1
+        if self.mining_progress == 600:
+            # Handle resource collection here
+            print("Resource collected!")
+            self.mining_progress = 0
             for character in self.character:
-                #print(f"Character rect: {character.rect}")
-                if character.rect.colliderect(resource):
-                    print("Collision with resource!")
-                    # Handle collision with resource here
-                    # For example, you can stop the unit or perform some action
-                    break
+                pygame.math.Vector2(-character.direction)
+            # You can also remove the resource from the game or update its state
+
     def update(self,screen,resourcelist):
         self.draw_active_cell(screen)
         self.draw_path(screen)

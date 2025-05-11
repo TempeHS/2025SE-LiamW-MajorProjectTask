@@ -15,3 +15,4 @@
 
 ## Sprint Review
 
+This sprite was a very large underestimate with the inclusion of lots of unforseen issues that took very long to fix. All the increments are delivered. The structure class can produce a fully working unit that follows its own path and updates the same as the original unit. The worker class can collect resources from the resource class. This required a collision system that I fundamentally didn't understand until I did visual debugging by showing the rects of each instance. After realising character is updating not the actual object allowed me to quickly implement the rest of the resource collection system. There is still no sprite for once the worker has collected the resource and not where for the unit to deposit the resource. 

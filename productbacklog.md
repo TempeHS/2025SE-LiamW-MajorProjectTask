@@ -9,10 +9,11 @@
 7. standin sprite for worker with resource
 8. camera system
 9. ownership system for units (enemy, ally)
-10. create basic AI (hard coded)
-11. create sprites
-12. create map sprite
-13. Elevation mechanics (flying units and terrain)
-14. create three different factions for the game (classes again)
-15. make UI 
-16. try ML a proper AI
+10. UI overlay
+11. create basic AI (hard coded)
+12. create sprites
+13. create map sprite
+14. Elevation mechanics (flying units and terrain)
+15. create three different factions for the game (classes again)
+16. make UI 
+17. try ML a proper AI

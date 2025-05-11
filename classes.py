@@ -1,15 +1,35 @@
 import pygame
+from pygame.locals import *
 import math
 from pathfinding.core.grid import Grid
 from pathfinding.finder.a_star import AStarFinder
 from pathfinding.core.diagonal_movement import DiagonalMovement
 
-class Unit(pygame.sprite.Sprite):
-    def __init__(self,Owner,HP,Energy,Range,Speed,empty_path):
+class Object(pygame.sprite.Sprite):
+    def __init__(self,name,Owner,HP,Energy,Range,Speed,empty_path,x,y,Type):
         super().__init__()
-        self.image = pygame.image.load('assets/playerstandin.png').convert_alpha()
-        self.rect =  self.image.get_rect(center = (60,60))
-        self.pos = self.rect.center
+        #need to get rid of this and put it in individual classes
+        if Type == 0:
+            self.image = pygame.image.load('assets/playerstandin.png').convert_alpha()
+            self.rect =  self.image.get_rect(center = (x,y))
+            self.pos = self.rect.center
+        elif Type == 1:
+            self.image = pygame.image.load('assets/structurestandin.png').convert_alpha()
+            self.rect =  self.image.get_rect(center = (x,y))
+            self.pos = self.rect.center
+        elif Type == 2:
+            self.image = pygame.image.load('assets/structurestandinactive.png').convert_alpha()
+            self.rect =  self.image.get_rect(center = (x,y))
+            self.pos = self.rect.center
+        elif Type == 3:
+            self.image = pygame.image.load('assets/workerstandin.png').convert_alpha()
+            self.rect =  self.image.get_rect(center = (x,y))
+            self.pos = self.rect.center
+        elif Type == 4:
+            self.image = pygame.image.load('assets/resourcestandin.png').convert_alpha()
+            self.rect =  self.image.get_rect(center = (x,y))
+            self.pos = self.rect.center
+        self.name = name
         self.Owner = Owner
         self.HP = HP
         self.Energy = Energy
@@ -48,7 +68,7 @@ class Unit(pygame.sprite.Sprite):
             start = pygame.math.Vector2(self.pos)
             end = pygame.math.Vector2(self.collision_rects[0].center)
             self.direction = (end - start).normalize()
-            print(self.direction)
+            #print(self.direction)
         else:
             self.direction = pygame.math.Vector2(0,0)
             self.path = []
@@ -62,19 +82,22 @@ class Unit(pygame.sprite.Sprite):
         else:
             self.empty_path()
 
-    def update(self):
+    def update(self,screen):
         self.pos += self.direction * self.Speed
         self.check_collisions()
         self.rect.center = self.pos
+        pygame.draw.rect(screen, (255, 0, 0), self.rect, 2)
 
-class Pathfinder:
-    def __init__ (self,Map,screen,speed):
+class Pathfinder(Object):
+    def __init__ (self,name,Owner,HP,Energy,Range,Speed,Map,screen,x,y,Type):
+        super().__init__(name,Owner,HP,Energy,Range,Speed,self.empty_path,x,y,Type)
         self.Map = Map
         self.grid = Grid(matrix = Map)
         self.select_surf = pygame.transform.scale(pygame.image.load('assets/mouse_cursor.png').convert_alpha(),(1280/32,1280/32))
+        self.select_point = pygame.transform.scale(pygame.image.load('assets/path_point.png').convert_alpha(),(1280/32,1280/32))
         self.screen = screen
         self.path = []
-        self.character = pygame.sprite.GroupSingle(Unit("me",10,10,10,speed,self.empty_path))
+        self.character = pygame.sprite.GroupSingle(Object(name,Owner,HP,Energy,Range,Speed,self.empty_path,x,y,Type))
 
     def empty_path(self):
         self.path = []
@@ -132,9 +155,125 @@ class Pathfinder:
                 pygame.draw.circle(screen,'#4a4a4a',(x,y),2)
             if not len(points) == 1:
                 pygame.draw.lines(screen, '#4a4a4a',False, points, 5)
+                tempx,tempy = points[len(points)-1]
+                screen.blit(self.select_point,(tempx - 16,tempy-16))
 
     def update(self,screen):
         self.draw_active_cell(screen)
         self.draw_path(screen)
-        self.character.update()
+        self.character.update(screen)
         self.character.draw(screen)
+
+class Structure(Pathfinder):
+    def __init__(self,name,Owner,HP,Energy,Range,Map,screen,x,y):
+        super().__init__(name,Owner,HP,Energy,Range,0,Map,screen,x,y,1)
+        self.queue = [0,0,0,0,0]
+    
+    def production(self,time,productionflag):
+        n = 0
+        for slot in productionflag:
+            if slot == 1:
+                self.queue[n] += time
+                print(self.queue)
+            n += 1
+    
+    def startqueue(self,proflag):
+        for slot in proflag:
+            if slot == 0:
+                print(proflag.index(slot))
+                proflag[proflag.index(slot)] = 1
+                break
+    def stopqueue(self,proflag):
+        n = 4
+        for slot in reversed(proflag):
+            if slot == 1:
+                self.queue[n] = 0
+                proflag[n]  = 0
+                break
+            n -= 1
+    def createunit(self,proflag,Map,screen):
+        #placeholder build timer
+        unitTime = 8
+        if self.queue[0] >= unitTime:
+            Queue = self.queue
+            newqueue = [0,0,0,0,0]
+            newflag = [0,0,0,0,0]
+            for slot in Queue:
+                num = Queue.index(slot) + 1
+                newqueue[Queue.index(slot)] = Queue[num]
+            Queue = newqueue
+            for slot in proflag:
+                num = proflag.index(slot) + 1
+                newflag[proflag.index(slot)] = proflag[num]
+            proflag = newflag
+            Queue[4] = 0
+            self.queue = newqueue
+            Man = Unit("man","Me",100,100,0,2,Map,screen,300,300,0)
+            return (Man, proflag)
+
+
+    def update(self,screen,time,productionflag,Map):
+        self.draw_active_cell(screen)
+        self.draw_path(screen)
+        self.character.update(screen)
+        self.character.draw(screen)
+        if 1 in productionflag:
+            self.production(time,productionflag)
+        Man = self.createunit(productionflag,Map,screen)
+        if Man is not None:
+            return Man[0], Man[1]
+
+class Unit(Pathfinder):
+    def __init__(self,name,Owner,HP,Energy,Range,Speed,Map,screen,x,y,Type):
+        super().__init__(name,Owner,HP,Energy,Range,Speed,Map,screen,x,y,Type)
+        self.Type = 0
+
+class Worker(Unit):
+    def __init__(self,name,Owner,HP,Energy,Range,Speed,Map,screen,x,y):
+        super().__init__(name,Owner,HP,Energy,Range,Speed,Map,screen,x,y,3)
+        self.Speed = 1.5  # Workers are slower than units
+        self.mining_progress = 0
+        self.has_mined = False
+    
+    def draw_active_cell(self, screen):
+        return super().draw_active_cell(screen)
+    
+    def objectcollisioncheck(self,resourcelist):
+        if not self.has_mined:
+            for resource in resourcelist:
+                #print(f"Worker rect: {self.rect}, Resource rect: {resource.rect}")
+                for character in self.character:
+                    #print(f"Character rect: {character.rect}")
+                    if character.rect.colliderect(resource):
+                        print("Collision with resource!")
+                        character.direction = pygame.math.Vector2(0,0)
+                        self.mining()
+                        self.has_mined = True
+                        # Handle collision with resource here
+                        # For example, you can stop the unit or perform some action
+                        break
+                    else:
+                        self.mining_progress = 0
+    def mining(self):
+        self.mining_progress += 1
+        if self.mining_progress == 600:
+            # Handle resource collection here
+            print("Resource collected!")
+            self.mining_progress = 0
+            for character in self.character:
+                pygame.math.Vector2(-character.direction)
+            # You can also remove the resource from the game or update its state
+
+    def update(self,screen,resourcelist):
+        self.draw_active_cell(screen)
+        self.draw_path(screen)
+        self.character.update(screen)
+        self.objectcollisioncheck(resourcelist)
+        self.character.draw(screen)
+        #print(f"Updated rect: {self.rect.center}, Position: {self.pos}")
+
+
+class Resource(Pathfinder):
+    def __init__(self,name,Owner,Map,screen,x,y,resources):
+        super().__init__(name,Owner,0,0,0,0,Map,screen,x,y,4)
+        self.resources = resources

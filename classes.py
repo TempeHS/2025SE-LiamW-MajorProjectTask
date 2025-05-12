@@ -6,35 +6,15 @@ from pathfinding.finder.a_star import AStarFinder
 from pathfinding.core.diagonal_movement import DiagonalMovement
 
 class Object(pygame.sprite.Sprite):
-    def __init__(self,name,Owner,HP,Energy,Range,Speed,empty_path,x,y,Type):
+    def __init__(self,name,Owner,HP,Energy,Range,Speed,empty_path,x,y):
         super().__init__()
-        #need to get rid of this and put it in individual classes
-        if Type == 0:
-            self.image = pygame.image.load('assets/playerstandin.png').convert_alpha()
-            self.rect =  self.image.get_rect(center = (x,y))
-            self.pos = self.rect.center
-        elif Type == 1:
-            self.image = pygame.image.load('assets/structurestandin.png').convert_alpha()
-            self.rect =  self.image.get_rect(center = (x,y))
-            self.pos = self.rect.center
-        elif Type == 2:
-            self.image = pygame.image.load('assets/structurestandinactive.png').convert_alpha()
-            self.rect =  self.image.get_rect(center = (x,y))
-            self.pos = self.rect.center
-        elif Type == 3:
-            self.image = pygame.image.load('assets/workerstandin.png').convert_alpha()
-            self.rect =  self.image.get_rect(center = (x,y))
-            self.pos = self.rect.center
-        elif Type == 4:
-            self.image = pygame.image.load('assets/resourcestandin.png').convert_alpha()
-            self.rect =  self.image.get_rect(center = (x,y))
-            self.pos = self.rect.center
         self.name = name
         self.Owner = Owner
         self.HP = HP
         self.Energy = Energy
         self.Range = Range
         self.Speed = Speed #you need to set it 
+        self.pos = (100,100)
         self.path=[]
         self.collision_rects=[]
         self.direction = pygame.math.Vector2(0,0)
@@ -89,15 +69,15 @@ class Object(pygame.sprite.Sprite):
         pygame.draw.rect(screen, (255, 0, 0), self.rect, 2)
 
 class Pathfinder(Object):
-    def __init__ (self,name,Owner,HP,Energy,Range,Speed,Map,screen,x,y,Type):
-        super().__init__(name,Owner,HP,Energy,Range,Speed,self.empty_path,x,y,Type)
+    def __init__ (self,name,Owner,HP,Energy,Range,Speed,Map,screen,x,y):
+        super().__init__(name,Owner,HP,Energy,Range,Speed,self.empty_path,x,y)
         self.Map = Map
         self.grid = Grid(matrix = Map)
         self.select_surf = pygame.transform.scale(pygame.image.load('assets/mouse_cursor.png').convert_alpha(),(1280/32,1280/32))
         self.select_point = pygame.transform.scale(pygame.image.load('assets/path_point.png').convert_alpha(),(1280/32,1280/32))
         self.screen = screen
         self.path = []
-        self.character = pygame.sprite.GroupSingle(Object(name,Owner,HP,Energy,Range,Speed,self.empty_path,x,y,Type))
+        self.character = pygame.sprite.GroupSingle(Object(name,Owner,HP,Energy,Range,Speed,self.empty_path,x,y))
 
     def empty_path(self):
         self.path = []
@@ -166,7 +146,11 @@ class Pathfinder(Object):
 
 class Structure(Pathfinder):
     def __init__(self,name,Owner,HP,Energy,Range,Map,screen,x,y):
-        super().__init__(name,Owner,HP,Energy,Range,0,Map,screen,x,y,1)
+        super().__init__(name,Owner,HP,Energy,Range,0,Map,screen,x,y)
+        for character in self.character:
+            character.image = pygame.image.load('assets/structurestandin.png').convert_alpha()
+            character.rect =  character.image.get_rect(center = (x,y))
+            character.pos = character.rect.center
         self.queue = [0,0,0,0,0]
     
     def production(self,time,productionflag):
@@ -224,13 +208,21 @@ class Structure(Pathfinder):
             return Man[0], Man[1]
 
 class Unit(Pathfinder):
-    def __init__(self,name,Owner,HP,Energy,Range,Speed,Map,screen,x,y,Type):
-        super().__init__(name,Owner,HP,Energy,Range,Speed,Map,screen,x,y,Type)
+    def __init__(self,name,Owner,HP,Energy,Range,Speed,Map,screen,x,y):
+        super().__init__(name,Owner,HP,Energy,Range,Speed,Map,screen,x,y)
+        for character in self.character:
+            character.image = pygame.image.load('assets/playerstandin.png').convert_alpha()
+            character.rect =  character.image.get_rect(center = (x,y))
+            character.pos = character.rect.center
         self.Type = 0
 
 class Worker(Unit):
     def __init__(self,name,Owner,HP,Energy,Range,Speed,Map,screen,x,y):
-        super().__init__(name,Owner,HP,Energy,Range,Speed,Map,screen,x,y,3)
+        super().__init__(name,Owner,HP,Energy,Range,Speed,Map,screen,x,y)
+        for character in self.character:
+            character.image = pygame.image.load('assets/workerstandin.png').convert_alpha()
+            character.rect = character.image.get_rect(center = (x,y))
+            character.pos = character.rect.center
         self.Speed = 1.5  # Workers are slower than units
         self.mining_progress = 0
         self.has_mined = False
@@ -242,16 +234,15 @@ class Worker(Unit):
         if not self.has_mined:
             for resource in resourcelist:
                 #print(f"Worker rect: {self.rect}, Resource rect: {resource.rect}")
-                for character in self.character:
-                    #print(f"Character rect: {character.rect}")
-                    if character.rect.colliderect(resource):
-                        print("Collision with resource!")
-                        character.direction = pygame.math.Vector2(0,0)
-                        self.mining()
-                        self.has_mined = True
-                        # Handle collision with resource here
-                        # For example, you can stop the unit or perform some action
-                        break
+                for rcharacter in resource.character:
+                    for character in self.character:
+                        if character.rect.colliderect(rcharacter.rect):
+                            print("Collision with resource!")
+                            character.direction = pygame.math.Vector2(0,0)
+                            self.mining()
+                            # Handle collision with resource here
+                            # For example, you can stop the unit or perform some action
+                            break
                     else:
                         self.mining_progress = 0
     def mining(self):
@@ -262,6 +253,8 @@ class Worker(Unit):
             self.mining_progress = 0
             for character in self.character:
                 pygame.math.Vector2(-character.direction)
+                character.image = pygame.image.load('assets/workerwithRstandin.png').convert_alpha()
+            self.has_mined = True
             # You can also remove the resource from the game or update its state
 
     def update(self,screen,resourcelist):
@@ -275,5 +268,9 @@ class Worker(Unit):
 
 class Resource(Pathfinder):
     def __init__(self,name,Owner,Map,screen,x,y,resources):
-        super().__init__(name,Owner,0,0,0,0,Map,screen,x,y,4)
+        super().__init__(name,Owner,0,0,0,0,Map,screen,x,y)
+        for character in self.character:
+            character.image = pygame.image.load('assets/resourcestandin.png').convert_alpha()
+            character.rect =  character.image.get_rect(center = (x,y))
+            character.pos = character.rect.center
         self.resources = resources

@@ -154,6 +154,8 @@ class Structure(Pathfinder):
         self.queue = [0,0,0,0,0]
     
     def production(self,time,productionflag):
+        for character in self.character:
+            character.image = pygame.image.load('assets/structurestandinactive.png').convert_alpha()
         n = 0
         for slot in productionflag:
             if slot == 1:
@@ -192,7 +194,7 @@ class Structure(Pathfinder):
             proflag = newflag
             Queue[4] = 0
             self.queue = newqueue
-            Man = Unit("man","Me",100,100,0,2,Map,screen,300,300,0)
+            Man = Unit("man","Me",100,100,0,2,Map,screen,300,300)
             return (Man, proflag)
 
 
@@ -265,7 +267,6 @@ class Worker(Unit):
         self.character.draw(screen)
         #print(f"Updated rect: {self.rect.center}, Position: {self.pos}")
 
-
 class Resource(Pathfinder):
     def __init__(self,name,Owner,Map,screen,x,y,resources):
         super().__init__(name,Owner,0,0,0,0,Map,screen,x,y)
@@ -274,3 +275,32 @@ class Resource(Pathfinder):
             character.rect =  character.image.get_rect(center = (x,y))
             character.pos = character.rect.center
         self.resources = resources
+
+class Base(Structure):
+    def __init__(self,name,Owner,HP,Energy,Range,Map,screen,x,y):
+        super().__init__(name,Owner,HP,Energy,Range,Map,screen,x,y)
+        for character in self.character:
+            character.image = pygame.image.load('assets/structurestandin.png').convert_alpha()
+            character.rect =  character.image.get_rect(center = (x,y))
+            character.pos = character.rect.center
+        self.queue = [0,0,0,0,0]
+
+    def createunit(self,proflag,Map,screen):
+        #placeholder build timer
+        unitTime = 5
+        if self.queue[0] >= unitTime:
+            Queue = self.queue
+            newqueue = [0,0,0,0,0]
+            newflag = [0,0,0,0,0]
+            for slot in Queue:
+                num = Queue.index(slot) + 1
+                newqueue[Queue.index(slot)] = Queue[num]
+            Queue = newqueue
+            for slot in proflag:
+                num = proflag.index(slot) + 1
+                newflag[proflag.index(slot)] = proflag[num]
+            proflag = newflag
+            Queue[4] = 0
+            self.queue = newqueue
+            Man = Worker("man1","Me",100,100,0,2,Map,screen,300,300)
+            return (Man, proflag)

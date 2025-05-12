@@ -55,10 +55,12 @@ structurelist = pygame.sprite.Group()
 unitlist = pygame.sprite.Group()
 resourcelist = pygame.sprite.Group()
 workerlist = pygame.sprite.Group()
-Structure = Class.Structure("structure","Me",100,100,0,Map,screen,250,250)
+Base = Class.Base("base","Me",100,100,0,Map,screen,250,250)
+Structure = Class.Structure("structure","Me",100,100,0,Map,screen,450,450)
 Unit = Class.Unit("unit","Me",100,100,0,2,Map,screen,300,300)
 Resource = Class.Resource("resource","Me",Map,screen,100,100,10)
 Worker = Class.Worker("worker","Me",100,100,0,2,Map,screen,200,200)
+structurelist.add(Base)
 structurelist.add(Structure)
 unitlist.add(Unit)
 resourcelist.add(Resource)
@@ -94,15 +96,14 @@ while running:
 
     # fill the screen with a color to wipe away anything from last frame
     screen.blit(bg_surf,(0,0))
-    for structures,units,resource,worker in zip(structurelist,unitlist,resourcelist,workerlist): #fix this cause it means when there are no units it will break
-        workerlist.update(screen,resourcelist)
-        unitlist.update(screen)
-        resourcelist.update(screen)
-        newUnit = structures.update(screen,dt,proflag,Map)
-        if newUnit is not None:
-            proflag = newUnit[1]
-            unitlist.add(newUnit[0])
-            print(unitlist)
+    workerlist.update(screen,resourcelist)
+    unitlist.update(screen)
+    resourcelist.update(screen)
+    newUnit = structurelist.update(screen,dt,proflag,Map)
+    if newUnit is not None:
+        proflag = newUnit[1]
+        unitlist.add(newUnit[0])
+        print(unitlist)
 
     pygame.display.update()
     # limits FPS to 60

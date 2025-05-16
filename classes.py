@@ -152,8 +152,10 @@ class Structure(Pathfinder):
             character.rect =  character.image.get_rect(center = (x,y))
             character.pos = character.rect.center
         self.queue = [0,0,0,0,0]
+        self.proflag = [0,0,0,0,0]
     
-    def production(self,time,productionflag):
+    def production(self,time):
+        productionflag = self.proflag
         for character in self.character:
             character.image = pygame.image.load('assets/structurestandinactive.png').convert_alpha()
         n = 0
@@ -163,13 +165,15 @@ class Structure(Pathfinder):
                 print(self.queue)
             n += 1
     
-    def startqueue(self,proflag):
+    def startqueue(self):
+        proflag = self.proflag
         for slot in proflag:
             if slot == 0:
                 print(proflag.index(slot))
                 proflag[proflag.index(slot)] = 1
                 break
-    def stopqueue(self,proflag):
+    def stopqueue(self):
+        proflag = self.proflag
         n = 4
         for slot in reversed(proflag):
             if slot == 1:
@@ -177,7 +181,7 @@ class Structure(Pathfinder):
                 proflag[n]  = 0
                 break
             n -= 1
-    def createunit(self,proflag,Map,screen):
+    def createunit(self,Map,screen):
         #placeholder build timer
         unitTime = 8
         if self.queue[0] >= unitTime:
@@ -188,26 +192,30 @@ class Structure(Pathfinder):
                 num = Queue.index(slot) + 1
                 newqueue[Queue.index(slot)] = Queue[num]
             Queue = newqueue
-            for slot in proflag:
-                num = proflag.index(slot) + 1
-                newflag[proflag.index(slot)] = proflag[num]
-            proflag = newflag
+            for slot in self.proflag:
+                num = self.proflag.index(slot) + 1
+                newflag[self.proflag.index(slot)] = self.proflag[num]
+            self.proflag = newflag
             Queue[4] = 0
             self.queue = newqueue
             Man = Unit("man","Me",100,100,0,2,Map,screen,300,300)
-            return (Man, proflag)
+            for character in self.character:
+                character.image = pygame.image.load('assets/structurestandin.png').convert_alpha()
+            print(Man)
+            return Man
 
 
-    def update(self,screen,time,productionflag,Map):
+    def update(self,screen,time,Map):
         self.draw_active_cell(screen)
         self.draw_path(screen)
         self.character.update(screen)
         self.character.draw(screen)
+        productionflag = self.proflag
         if 1 in productionflag:
-            self.production(time,productionflag)
-        Man = self.createunit(productionflag,Map,screen)
+            self.production(time)
+        Man = self.createunit(Map,screen)
         if Man is not None:
-            return Man[0], Man[1]
+            return Man
 
 class Unit(Pathfinder):
     def __init__(self,name,Owner,HP,Energy,Range,Speed,Map,screen,x,y):
@@ -284,8 +292,9 @@ class Base(Structure):
             character.rect =  character.image.get_rect(center = (x,y))
             character.pos = character.rect.center
         self.queue = [0,0,0,0,0]
+        self.proflag = [0,0,0,0,0]
 
-    def createunit(self,proflag,Map,screen):
+    def createunit(self,Map,screen):
         #placeholder build timer
         unitTime = 5
         if self.queue[0] >= unitTime:
@@ -296,11 +305,13 @@ class Base(Structure):
                 num = Queue.index(slot) + 1
                 newqueue[Queue.index(slot)] = Queue[num]
             Queue = newqueue
-            for slot in proflag:
-                num = proflag.index(slot) + 1
-                newflag[proflag.index(slot)] = proflag[num]
-            proflag = newflag
+            for slot in self.proflag:
+                num = self.proflag.index(slot) + 1
+                newflag[self.proflag.index(slot)] = self.proflag[num]
+            self.proflag = newflag
             Queue[4] = 0
             self.queue = newqueue
             Man = Worker("man1","Me",100,100,0,2,Map,screen,300,300)
-            return (Man, proflag)
+            for character in self.character:
+                character.image = pygame.image.load('assets/structurestandin.png').convert_alpha()
+            return Man

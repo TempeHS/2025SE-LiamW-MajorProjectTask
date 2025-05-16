@@ -14,8 +14,6 @@ clock = pygame.time.Clock()
 running = True
 dt = 0
 clicking = False
-proflag = [0,0,0,0,0]
-
 #Map
 bg_surf = pygame.transform.scale(pygame.image.load('assets/backgroundstandin.png').convert(),(1280,720))
 Map = [[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
@@ -89,21 +87,22 @@ while running:
             #queue
             if event.key == pygame.K_b:
                 for structures in structurelist:
-                    structures.startqueue(proflag)
+                    structures.startqueue()
             if event.key == pygame.K_c:
                 for structures in structurelist:
-                    structures.stopqueue(proflag)
+                    structures.stopqueue()
 
     # fill the screen with a color to wipe away anything from last frame
     screen.blit(bg_surf,(0,0))
     workerlist.update(screen,resourcelist)
     unitlist.update(screen)
     resourcelist.update(screen)
-    newUnit = structurelist.update(screen,dt,proflag,Map)
+    newUnit = structurelist.update(screen,dt,Map)
     if newUnit is not None:
-        proflag = newUnit[1]
-        unitlist.add(newUnit[0])
+        unitlist.add(newUnit)
         print(unitlist)
+    else:
+        print("No new unit")
 
     pygame.display.update()
     # limits FPS to 60

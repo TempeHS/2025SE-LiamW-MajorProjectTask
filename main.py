@@ -53,8 +53,8 @@ structurelist = pygame.sprite.Group()
 unitlist = pygame.sprite.Group()
 resourcelist = pygame.sprite.Group()
 workerlist = pygame.sprite.Group()
-Base = Class.Base("base","Me",100,100,0,Map,screen,250,250)
-Structure = Class.Structure("structure","Me",100,100,0,Map,screen,450,450)
+Base = Class.Base("base","Me",100,100,0,Map,screen,250,250,workerlist)
+Structure = Class.Structure("structure","Me",100,100,0,Map,screen,450,450,unitlist)
 Unit = Class.Unit("unit","Me",100,100,0,2,Map,screen,300,300)
 Resource = Class.Resource("resource","Me",Map,screen,100,100,10)
 Worker = Class.Worker("worker","Me",100,100,0,2,Map,screen,200,200)
@@ -97,12 +97,16 @@ while running:
     workerlist.update(screen,resourcelist)
     unitlist.update(screen)
     resourcelist.update(screen)
-    newUnit = structurelist.update(screen,dt,Map)
-    if newUnit is not None:
-        unitlist.add(newUnit)
-        print(unitlist)
-    else:
-        print("No new unit")
+    structurelist.update(screen,dt,Map)
+    for structure in structurelist:
+        try:
+            for worker in structure.wlist:
+                workerlist.add(worker)
+
+        except AttributeError:
+            for unit in structure.ulist:
+                unitlist.add(unit)
+
 
     pygame.display.update()
     # limits FPS to 60

@@ -145,12 +145,13 @@ class Pathfinder(Object):
         self.character.draw(screen)
 
 class Structure(Pathfinder):
-    def __init__(self,name,Owner,HP,Energy,Range,Map,screen,x,y):
+    def __init__(self,name,Owner,HP,Energy,Range,Map,screen,x,y,unitlist):
         super().__init__(name,Owner,HP,Energy,Range,0,Map,screen,x,y)
         for character in self.character:
             character.image = pygame.image.load('assets/structurestandin.png').convert_alpha()
             character.rect =  character.image.get_rect(center = (x,y))
             character.pos = character.rect.center
+        self.ulist = unitlist
         self.queue = [0,0,0,0,0]
         self.proflag = [0,0,0,0,0]
     
@@ -198,11 +199,10 @@ class Structure(Pathfinder):
             self.proflag = newflag
             Queue[4] = 0
             self.queue = newqueue
-            Man = Unit("man","Me",100,100,0,2,Map,screen,300,300)
+            Man = Unit("man","Me",100,100,0,2,Map,screen,600,600)
             for character in self.character:
                 character.image = pygame.image.load('assets/structurestandin.png').convert_alpha()
-            print(Man)
-            return Man
+            self.ulist.add(Man)
 
 
     def update(self,screen,time,Map):
@@ -213,9 +213,7 @@ class Structure(Pathfinder):
         productionflag = self.proflag
         if 1 in productionflag:
             self.production(time)
-        Man = self.createunit(Map,screen)
-        if Man is not None:
-            return Man
+        self.createunit(Map,screen)
 
 class Unit(Pathfinder):
     def __init__(self,name,Owner,HP,Energy,Range,Speed,Map,screen,x,y):
@@ -285,12 +283,13 @@ class Resource(Pathfinder):
         self.resources = resources
 
 class Base(Structure):
-    def __init__(self,name,Owner,HP,Energy,Range,Map,screen,x,y):
-        super().__init__(name,Owner,HP,Energy,Range,Map,screen,x,y)
+    def __init__(self,name,Owner,HP,Energy,Range,Map,screen,x,y,workerlist):
+        super().__init__(name,Owner,HP,Energy,Range,Map,screen,x,y,0)
         for character in self.character:
             character.image = pygame.image.load('assets/structurestandin.png').convert_alpha()
             character.rect =  character.image.get_rect(center = (x,y))
             character.pos = character.rect.center
+        self.wlist = workerlist
         self.queue = [0,0,0,0,0]
         self.proflag = [0,0,0,0,0]
 
@@ -314,4 +313,4 @@ class Base(Structure):
             Man = Worker("man1","Me",100,100,0,2,Map,screen,300,300)
             for character in self.character:
                 character.image = pygame.image.load('assets/structurestandin.png').convert_alpha()
-            return Man
+            self.wlist.add(Man)

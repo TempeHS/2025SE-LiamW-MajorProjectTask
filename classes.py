@@ -238,21 +238,47 @@ class Worker(Unit):
     def draw_active_cell(self, screen):
         return super().draw_active_cell(screen)
     
-    def objectcollisioncheck(self,resourcelist):
+    def resourcecollectcol(self,resourcelist):
         if not self.has_mined:
             for resource in resourcelist:
                 #print(f"Worker rect: {self.rect}, Resource rect: {resource.rect}")
                 for rcharacter in resource.character:
                     for character in self.character:
                         if character.rect.colliderect(rcharacter.rect):
-                            print("Collision with resource!")
+                            #print("Collision with resource!")
+                            #need to rework logic for later to be if the user clicks on the resource then they stop at the resource which will stop locking the worker class to the resource
                             character.direction = pygame.math.Vector2(0,0)
                             self.mining()
-                            # Handle collision with resource here
-                            # For example, you can stop the unit or perform some action
                             break
                     else:
                         self.mining_progress = 0
+
+    def baseputcol(self,structurelist):
+        if self.has_mined:
+            for structure in structurelist:
+                #print(f"Worker rect: {self.rect}, Resource rect: {resource.rect}")
+                for rcharacter in structure.character:
+                    for character in self.character:
+                        if character.rect.colliderect(rcharacter.rect):
+                            print("Collision with base!")
+                            character.direction = pygame.math.Vector2(0,0)
+                            self.putting()
+                            structure.resource += 5
+                            print(structure.resource)
+                            #add updating resource counter in base here
+
+                            break
+                    else:
+                        self.mining_progress = 0
+    
+    def putting(self):
+        # Handle resource collection here
+        print("Resource deposited!")
+        for character in self.character:
+            pygame.math.Vector2(-character.direction)
+            character.image = pygame.image.load('assets/workerstandin.png').convert_alpha()
+        self.has_mined = False
+
     def mining(self):
         self.mining_progress += 1
         if self.mining_progress == 600:
@@ -265,11 +291,12 @@ class Worker(Unit):
             self.has_mined = True
             # You can also remove the resource from the game or update its state
 
-    def update(self,screen,resourcelist):
+    def update(self,screen,resourcelist,structurelist):
         self.draw_active_cell(screen)
         self.draw_path(screen)
         self.character.update(screen)
-        self.objectcollisioncheck(resourcelist)
+        self.resourcecollectcol(resourcelist)
+        self.baseputcol(structurelist)
         self.character.draw(screen)
         #print(f"Updated rect: {self.rect.center}, Position: {self.pos}")
 
@@ -290,6 +317,7 @@ class Base(Structure):
             character.rect =  character.image.get_rect(center = (x,y))
             character.pos = character.rect.center
         self.wlist = workerlist
+        self.resource = 0
         self.queue = [0,0,0,0,0]
         self.proflag = [0,0,0,0,0]
 

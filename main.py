@@ -49,10 +49,10 @@ Map = [[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]]
 
-structurelist = pygame.sprite.Group()
-unitlist = pygame.sprite.Group()
-resourcelist = pygame.sprite.Group()
-workerlist = pygame.sprite.Group()
+structurelist = Class.CameraGroup()
+unitlist = Class.CameraGroup()
+resourcelist = Class.CameraGroup()
+workerlist = Class.CameraGroup()
 Base = Class.Base("base","Me",100,100,0,Map,screen,300,300,workerlist)
 Structure = Class.Structure("structure","Me",100,100,0,Map,screen,450,450,unitlist)
 Unit = Class.Unit("unit","Me",100,100,0,2,Map,screen,350,350)
@@ -98,6 +98,11 @@ while running:
     unitlist.update(screen)
     resourcelist.update(screen)
     structurelist.update(screen,dt,Map)
+    #currently doesn't work
+    workerlist.custom_draw()
+    unitlist.custom_draw()
+    resourcelist.custom_draw()
+    structurelist.custom_draw()
     for structure in structurelist:
         try:
             for worker in structure.wlist:

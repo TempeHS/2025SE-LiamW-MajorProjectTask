@@ -68,6 +68,18 @@ class Object(pygame.sprite.Sprite):
         self.rect.center = self.pos
         pygame.draw.rect(screen, (255, 0, 0), self.rect, 2)
 
+#fix later currently has no negative effect 
+class CameraGroup(pygame.sprite.Group):
+    def __init__(self):
+        super().__init__()
+        self.display_surface = pygame.display.get_surface()
+
+    def custom_draw(self):
+        for sprites in self.sprites():
+            for character in sprites.character:
+                for sprite in sorted(self.sprites(),key= lambda sprite: character.rect.centery):
+                    self.display_surface.blit(character.image,character.rect)
+
 class Pathfinder(Object):
     def __init__ (self,name,Owner,HP,Energy,Range,Speed,Map,screen,x,y):
         super().__init__(name,Owner,HP,Energy,Range,Speed,self.empty_path,x,y)
@@ -142,7 +154,7 @@ class Pathfinder(Object):
         self.draw_active_cell(screen)
         self.draw_path(screen)
         self.character.update(screen)
-        self.character.draw(screen)
+        #self.character.draw(screen)
 
 class Structure(Pathfinder):
     def __init__(self,name,Owner,HP,Energy,Range,Map,screen,x,y,unitlist):
@@ -209,7 +221,7 @@ class Structure(Pathfinder):
         self.draw_active_cell(screen)
         self.draw_path(screen)
         self.character.update(screen)
-        self.character.draw(screen)
+        #self.character.draw(screen)
         productionflag = self.proflag
         if 1 in productionflag:
             self.production(time)
@@ -297,7 +309,7 @@ class Worker(Unit):
         self.character.update(screen)
         self.resourcecollectcol(resourcelist)
         self.baseputcol(structurelist)
-        self.character.draw(screen)
+        #self.character.draw(screen)
         #print(f"Updated rect: {self.rect.center}, Position: {self.pos}")
 
 class Resource(Pathfinder):

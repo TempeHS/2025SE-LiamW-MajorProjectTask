@@ -49,6 +49,7 @@ Map = [[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]]
 
+cameralist = Class.CameraGroup()
 structurelist = Class.CameraGroup()
 unitlist = Class.CameraGroup()
 resourcelist = Class.CameraGroup()
@@ -58,11 +59,11 @@ Structure = Class.Structure("structure","Me",100,100,0,Map,screen,450,450,unitli
 Unit = Class.Unit("unit","Me",100,100,0,2,Map,screen,350,350)
 Resource = Class.Resource("resource","Me",Map,screen,100,100,10)
 Worker = Class.Worker("worker","Me",100,100,0,2,Map,screen,200,200)
-structurelist.add(Base)
-structurelist.add(Structure)
+structurelist.add(Base,Structure)
 unitlist.add(Unit)
 resourcelist.add(Resource)
 workerlist.add(Worker)
+cameralist.add(structurelist,unitlist,resourcelist,workerlist)
 
 player_pos = pygame.Vector2(screen.get_width() / 2, screen.get_height() / 2)
 
@@ -93,24 +94,23 @@ while running:
                     structures.stopqueue()
 
     # fill the screen with a color to wipe away anything from last frame
-    screen.blit(bg_surf,(0,0))
+    #screen.blit(bg_surf,(0,0))
+    cameralist.custom_draw()
     workerlist.update(screen,resourcelist,structurelist)
     unitlist.update(screen)
     resourcelist.update(screen)
     structurelist.update(screen,dt,Map)
-    #currently doesn't work
-    workerlist.custom_draw()
-    unitlist.custom_draw()
-    resourcelist.custom_draw()
-    structurelist.custom_draw()
+
     for structure in structurelist:
         try:
             for worker in structure.wlist:
                 workerlist.add(worker)
+                cameralist.add(worker)
 
         except AttributeError:
             for unit in structure.ulist:
                 unitlist.add(unit)
+                cameralist.add(unit)
 
 
     pygame.display.update()

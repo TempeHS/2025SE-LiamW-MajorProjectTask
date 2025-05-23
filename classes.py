@@ -73,12 +73,23 @@ class CameraGroup(pygame.sprite.Group):
     def __init__(self):
         super().__init__()
         self.display_surface = pygame.display.get_surface()
+        self.ground_surf = pygame.image.load('assets/backgroundstandin.png').convert()
+        self.ground_rect = self.ground_surf.get_rect()
+        #camera offset
+        self.offset = pygame.math.Vector2()
 
     def custom_draw(self):
+        self.display_surface.blit(self.ground_surf, self.ground_rect)
+        # Collect all characters from all sprites
+        all_characters = []
         for sprites in self.sprites():
             for character in sprites.character:
-                for sprite in sorted(self.sprites(),key= lambda sprite: character.rect.centery):
-                    self.display_surface.blit(character.image,character.rect)
+                all_characters.append(character)
+        # Sort by y (centery)
+        all_characters.sort(key=lambda c: c.rect.centery)
+        # Draw in order
+        for character in all_characters:
+            self.display_surface.blit(character.image, character.rect)
 
 class Pathfinder(Object):
     def __init__ (self,name,Owner,HP,Energy,Range,Speed,Map,screen,x,y):

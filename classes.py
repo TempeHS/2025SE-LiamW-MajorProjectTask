@@ -77,15 +77,55 @@ class CameraGroup(pygame.sprite.Group):
         self.ground_rect = self.ground_surf.get_rect(topleft = (0,0))
         #camera offset
         self.offset = pygame.math.Vector2(100,100)
+
+        #for centered camera
         self.half_width = self.display_surface.get_size()[0] // 2
         self.half_height = self.display_surface.get_size()[1] // 2
+
+        self.keyboard_speed = 5
+
+        self.camera_borders = {'left': 200, 'right': 200, 'top': 200, 'bottom': 200}
+        l = self.camera_borders["left"]
+        t = self.camera_borders["top"]
+        w = self.display_surface.get_size()[0] - (self.camera_borders["left"] + self.camera_borders["right"])
+        h = self.display_surface.get_size()[1] - (self.camera_borders["top"] + self.camera_borders["bottom"])
+        self.camera_rect = pygame.Rect(l,t,w,h)
     
     def center_target_camera(self, target): 
         self.offset.x = -(target.rect.centerx - self.half_width)
         self.offset.y = -(target.rect.centery - self.half_height)
 
+    def box_target_camera(self, target):
+        if target.rect.left < self.camera_rect.left:
+            self.camera_rect.left = target.rect.left
+        if target.rect.right > self.camera_rect.right:
+            self.camera_rect.right = target.rect.right
+        if target.rect.top < self.camera_rect.top:
+            self.camera_rect.top = target.rect.top
+        if target.rect.bottom > self.camera_rect.bottom:
+            self.camera_rect.bottom = target.rect.bottom
+
+        self.offset.x = -(self.camera_rect.left - self.camera_borders["left"])
+        self.offset.y = -(self.camera_rect.top - self.camera_borders["top"])
+
+    def keyboard_camera(self):
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LEFT]: self.camera_rect.x -= 5
+        if keys[pygame.K_RIGHT]: self.camera_rect.x += 5
+        if keys[pygame.K_UP]: self.camera_rect.y -= 5  
+        if keys[pygame.K_DOWN]: self.camera_rect.y += 5
+        self.offset.x = -(self.camera_rect.left - self.camera_borders["left"])
+        self.offset.y = -(self.camera_rect.top - self.camera_borders["top"])
+
     def custom_draw(self,player):
-        self.center_target_camera(player)
+        # dead zone camera
+        #self.box_target_camera(player)
+        
+        self.keyboard_camera()
+
+        #for centred around player camera will be used for control groups
+            #self.center_target_camera(player)
+
         ground_offset = self.ground_rect.topleft + self.offset
         self.display_surface.blit(self.ground_surf, ground_offset)
         # Collect all characters from all sprites
@@ -100,6 +140,7 @@ class CameraGroup(pygame.sprite.Group):
             offset_pos = character.rect.topleft + self.offset
             pygame.draw.rect(self.display_surface, (255, 0, 0), character.rect.move(self.offset), 2)
             self.display_surface.blit(character.image, offset_pos)
+        #pygame.draw.rect(self.display_surface, (0, 255, 0), self.camera_rect, 5)
 
 class Pathfinder(Object):
     def __init__ (self,name,Owner,HP,Energy,Range,Speed,Map,screen,x,y):

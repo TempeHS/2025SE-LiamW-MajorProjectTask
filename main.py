@@ -15,9 +15,10 @@ running = True
 dt = 0
 clicking = False
 #Map
-bg_surf = pygame.transform.scale(pygame.image.load('assets/backgroundstandin.png').convert(),(1280,720))
+#bg_surf = pygame.transform.scale(pygame.image.load('assets/backgroundstandin.png').convert(),(1280,720))
 Map = [[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
        [1,0,1,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+       [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
@@ -66,9 +67,9 @@ workerlist.add(Worker)
 cameralist.add(structurelist,unitlist,resourcelist,workerlist)
 
 player_pos = pygame.Vector2(screen.get_width() / 2, screen.get_height() / 2)
-
+offset = cameralist.offset
 while running:
-    # poll for events
+	# poll for events
     for event in pygame.event.get():
         mx, my = pygame.mouse.get_pos()  # gets mouse x,y coordinates
         location = [mx, my]
@@ -78,11 +79,11 @@ while running:
             #all mouse inputs
             if event.button == 1:  
                 for units in unitlist:
-                    units.create_path()
+                    units.create_path(offset)
                 for structures in structurelist:
-                    structures.create_path()
+                    structures.create_path(offset)
                 for worker in workerlist:
-                    worker.create_path()
+                    worker.create_path(offset)
         if event.type == pygame.KEYDOWN:
             #all keyboard inputs
             #queue
@@ -95,11 +96,11 @@ while running:
 
     # fill the screen with a color to wipe away anything from last frame
     #screen.blit(bg_surf,(0,0))
-    cameralist.custom_draw()
-    workerlist.update(screen,resourcelist,structurelist)
-    unitlist.update(screen)
-    resourcelist.update(screen)
-    structurelist.update(screen,dt,Map)
+    cameralist.custom_draw(Worker)
+    workerlist.update(screen,resourcelist,structurelist,offset)
+    unitlist.update(screen,offset)
+    resourcelist.update(screen,offset)
+    structurelist.update(screen,dt,Map,offset)
 
     for structure in structurelist:
         try:

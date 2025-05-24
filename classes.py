@@ -14,11 +14,13 @@ class Object(pygame.sprite.Sprite):
         self.Energy = Energy
         self.Range = Range
         self.Speed = Speed #you need to set it 
-        self.pos = (100,100)
+        self.pos = pygame.math.Vector2(x, y)
         self.path=[]
         self.collision_rects=[]
         self.direction = pygame.math.Vector2(0,0)
         self.empty_path = empty_path
+        self.image = pygame.Surface((32, 32))
+        self.rect = self.image.get_rect(center=(x, y))
     
     @classmethod
     def spawn(self,screen,location): #this is not used
@@ -66,20 +68,26 @@ class Object(pygame.sprite.Sprite):
         self.pos += self.direction * self.Speed
         self.check_collisions()
         self.rect.center = self.pos
-        pygame.draw.rect(screen, (255, 0, 0), self.rect, 2)
 
-#fix later currently has no negative effect 
 class CameraGroup(pygame.sprite.Group):
     def __init__(self):
         super().__init__()
         self.display_surface = pygame.display.get_surface()
         self.ground_surf = pygame.image.load('assets/backgroundstandin.png').convert()
-        self.ground_rect = self.ground_surf.get_rect()
+        self.ground_rect = self.ground_surf.get_rect(topleft = (0,0))
         #camera offset
-        self.offset = pygame.math.Vector2()
+        self.offset = pygame.math.Vector2(100,100)
+        self.half_width = self.display_surface.get_size()[0] // 2
+        self.half_height = self.display_surface.get_size()[1] // 2
+    
+    def center_target_camera(self, target): 
+        self.offset.x = target.rect.centerx - self.half_width
+        self.offset.y = target.rect.centery - self.half_height
 
-    def custom_draw(self):
-        self.display_surface.blit(self.ground_surf, self.ground_rect)
+    def custom_draw(self,player):
+        #self.center_target_camera(player)
+        ground_offset = self.ground_rect.topleft + self.offset
+        self.display_surface.blit(self.ground_surf, ground_offset)
         # Collect all characters from all sprites
         all_characters = []
         for sprites in self.sprites():
@@ -89,7 +97,9 @@ class CameraGroup(pygame.sprite.Group):
         all_characters.sort(key=lambda c: c.rect.centery)
         # Draw in order
         for character in all_characters:
-            self.display_surface.blit(character.image, character.rect)
+            offset_pos = character.rect.topleft + self.offset
+            pygame.draw.rect(self.display_surface, (255, 0, 0), character.rect.move(self.offset), 2)
+            self.display_surface.blit(character.image, offset_pos)
 
 class Pathfinder(Object):
     def __init__ (self,name,Owner,HP,Energy,Range,Speed,Map,screen,x,y):
@@ -135,35 +145,40 @@ class Pathfinder(Object):
             rect = pygame.Rect((col * 32, row * 32),(32,32))
             screen.blit(self.select_surf, rect)
 
-    def create_path(self):
-        startx,starty = self.character.sprite.get_coord()
-        start = self.grid.node(startx,starty)
-        mouse_pos = pygame.mouse.get_pos()  # gets mouse x,y coordinates
-        endx,endy = math.floor(mouse_pos[0] / 32), math.floor(mouse_pos[1] / 32)
-        end = self.grid.node(endx,endy)
+    def create_path(self,offset):
+        # Get mouse position in screen coordinates
+        mouse_pos = pygame.mouse.get_pos()
+        # Add camera offset to get world coordinates
+        world_mouse_x = mouse_pos[0] - offset.x
+        world_mouse_y = mouse_pos[1] - offset.y
 
-        finder = AStarFinder(diagonal_movement = DiagonalMovement.always)
-        self.path,_ = finder.find_path(start,end,self.grid)
+        startx, starty = self.character.sprite.get_coord()
+        start = self.grid.node(startx, starty)
+        endx, endy = math.floor(world_mouse_x / 32), math.floor(world_mouse_y / 32)
+        end = self.grid.node(endx, endy)
+
+        finder = AStarFinder(diagonal_movement=DiagonalMovement.always)
+        self.path, _ = finder.find_path(start, end, self.grid)
         self.grid.cleanup()
         self.character.sprite.set_path(self.path)
 
-    def draw_path(self,screen):
+    def draw_path(self, screen, offset):
         if self.path:
             points = []
             for point in self.path:
                 point = self.gridIntoInt(point)
-                x = (point[0] *32) + 16
-                y = (point[1] *32) + 16
+                x = (point[0] * 32) + 16 + offset.x
+                y = (point[1] * 32) + 16 + offset.y
                 points.append((x, y))
-                pygame.draw.circle(screen,'#4a4a4a',(x,y),2)
+                pygame.draw.circle(screen, '#4a4a4a', (x, y), 2)
             if not len(points) == 1:
-                pygame.draw.lines(screen, '#4a4a4a',False, points, 5)
-                tempx,tempy = points[len(points)-1]
-                screen.blit(self.select_point,(tempx - 16,tempy-16))
+                pygame.draw.lines(screen, '#4a4a4a', False, points, 5)
+                tempx, tempy = points[-1]
+                screen.blit(self.select_point, (tempx - 16, tempy - 16))
 
-    def update(self,screen):
+    def update(self,screen,offset):
         self.draw_active_cell(screen)
-        self.draw_path(screen)
+        self.draw_path(screen,offset)
         self.character.update(screen)
         #self.character.draw(screen)
 
@@ -228,9 +243,9 @@ class Structure(Pathfinder):
             self.ulist.add(Man)
 
 
-    def update(self,screen,time,Map):
+    def update(self,screen,time,Map,offset):
         self.draw_active_cell(screen)
-        self.draw_path(screen)
+        self.draw_path(screen,offset)
         self.character.update(screen)
         #self.character.draw(screen)
         productionflag = self.proflag
@@ -314,9 +329,9 @@ class Worker(Unit):
             self.has_mined = True
             # You can also remove the resource from the game or update its state
 
-    def update(self,screen,resourcelist,structurelist):
+    def update(self,screen,resourcelist,structurelist,offset):
         self.draw_active_cell(screen)
-        self.draw_path(screen)
+        self.draw_path(screen,offset)
         self.character.update(screen)
         self.resourcecollectcol(resourcelist)
         self.baseputcol(structurelist)

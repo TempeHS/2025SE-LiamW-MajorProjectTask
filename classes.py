@@ -81,11 +81,11 @@ class CameraGroup(pygame.sprite.Group):
         self.half_height = self.display_surface.get_size()[1] // 2
     
     def center_target_camera(self, target): 
-        self.offset.x = target.rect.centerx - self.half_width
-        self.offset.y = target.rect.centery - self.half_height
+        self.offset.x = -(target.rect.centerx - self.half_width)
+        self.offset.y = -(target.rect.centery - self.half_height)
 
     def custom_draw(self,player):
-        #self.center_target_camera(player)
+        self.center_target_camera(player)
         ground_offset = self.ground_rect.topleft + self.offset
         self.display_surface.blit(self.ground_surf, ground_offset)
         # Collect all characters from all sprites

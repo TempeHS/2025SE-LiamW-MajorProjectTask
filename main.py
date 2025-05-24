@@ -96,7 +96,7 @@ while running:
 
     # fill the screen with a color to wipe away anything from last frame
     #screen.blit(bg_surf,(0,0))
-    cameralist.custom_draw(Worker)
+    cameralist.custom_draw(Worker.character.sprite)
     workerlist.update(screen,resourcelist,structurelist,offset)
     unitlist.update(screen,offset)
     resourcelist.update(screen,offset)

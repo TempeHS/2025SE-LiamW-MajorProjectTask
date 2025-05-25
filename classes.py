@@ -77,12 +77,23 @@ class CameraGroup(pygame.sprite.Group):
         self.ground_rect = self.ground_surf.get_rect(topleft = (0,0))
         #camera offset
         self.offset = pygame.math.Vector2(100,100)
-
+        
         #for centered camera
         self.half_width = self.display_surface.get_size()[0] // 2
         self.half_height = self.display_surface.get_size()[1] // 2
 
         self.keyboard_speed = 5
+        self.mouse_speed = 5
+
+        #camera zoom
+        self.zoom_scale = 1.0 
+        self.internal_surf_size = (2500,2500)
+        self.internal_surf = pygame.Surface(self.internal_surf_size, flags=pygame.SRCALPHA)
+        self.internal_rect = self.internal_surf.get_rect(center = (self.half_width, self.half_height))
+        self.internal_surf_size_vector = pygame.math.Vector2(self.internal_surf_size)
+        self.internal_offset = pygame.math.Vector2(0, 0)
+        self.internal_offset.x = self.internal_surf_size[0] // 2 - self.half_width
+        self.internal_offset.y = self.internal_surf_size[1] // 2 - self.half_height
 
         self.camera_borders = {'left': 200, 'right': 200, 'top': 200, 'bottom': 200}
         l = self.camera_borders["left"]
@@ -117,17 +128,65 @@ class CameraGroup(pygame.sprite.Group):
         self.offset.x = -(self.camera_rect.left - self.camera_borders["left"])
         self.offset.y = -(self.camera_rect.top - self.camera_borders["top"])
 
+    def mouse_camera(self):
+        mouse = pygame.math.Vector2(pygame.mouse.get_pos())
+        mouse_offset_vector = pygame.math.Vector2(0, 0)
+        left_border = self.camera_borders["left"]
+        right_border = self.display_surface.get_size()[0] - self.camera_borders["right"]
+        top_border = self.camera_borders["top"]
+        bottom_border = self.display_surface.get_size()[1] - self.camera_borders["bottom"]
+
+        if top_border < mouse.y < bottom_border:
+            if mouse.x < left_border:
+                mouse_offset_vector.x = mouse.x - left_border
+                pygame.mouse.set_pos(left_border, mouse.y)
+            if mouse.x > right_border:
+                mouse_offset_vector.x = mouse.x - right_border
+                pygame.mouse.set_pos(right_border, mouse.y)
+        elif mouse.y < top_border:
+            if  mouse.x < left_border:
+                mouse_offset_vector.x = mouse - pygame.math.Vector2(left_border, top_border)
+                pygame  .mouse.set_pos(left_border, top_border)
+            if mouse.x > right_border:
+                mouse_offset_vector.x = mouse - pygame.math.Vector2(right_border, top_border)
+                pygame.mouse.set_pos(right_border, top_border)
+        elif mouse.y > bottom_border:
+            if mouse.x < left_border:
+                mouse_offset_vector.x = mouse - pygame.math.Vector2(left_border, bottom_border)
+                pygame.mouse.set_pos(left_border, bottom_border)
+            if mouse.x > right_border:
+                mouse_offset_vector.x = mouse - pygame.math.Vector2(right_border, bottom_border)
+                pygame.mouse.set_pos(right_border, bottom_border)
+
+        if left_border < mouse.x < right_border:
+            if mouse.y < top_border:
+                mouse_offset_vector.y = mouse.y - top_border
+                pygame.mouse.set_pos(mouse.x, top_border)
+            if mouse.y > bottom_border:
+                mouse_offset_vector.y = mouse.y - bottom_border
+                pygame.mouse.set_pos(mouse.x, bottom_border)
+        
+        self.offset += -mouse_offset_vector * self.mouse_speed
+
+    def zoom_camera(self):
+        ##if keys[pygame.MOUSEWHEEL]: 
+            #self.zoom_scale += 0.1
+        #if keys[pygame.MOUSEWHEEL]: 
+            #self.zoom_scale -= 0.1
+        pass
+
     def custom_draw(self,player):
         # dead zone camera
         #self.box_target_camera(player)
         
-        self.keyboard_camera()
-
+        #self.keyboard_camera()
+        self.mouse_camera()
+        self.internal_surf.fill(('#4a4a4a'))  # Fill the internal surface with a color
         #for centred around player camera will be used for control groups
             #self.center_target_camera(player)
 
-        ground_offset = self.ground_rect.topleft + self.offset
-        self.display_surface.blit(self.ground_surf, ground_offset)
+        ground_offset = self.ground_rect.topleft + self.offset - self.internal_offset
+        self.internal_surf.blit(self.ground_surf, ground_offset)
         # Collect all characters from all sprites
         all_characters = []
         for sprites in self.sprites():
@@ -137,10 +196,14 @@ class CameraGroup(pygame.sprite.Group):
         all_characters.sort(key=lambda c: c.rect.centery)
         # Draw in order
         for character in all_characters:
-            offset_pos = character.rect.topleft + self.offset
-            pygame.draw.rect(self.display_surface, (255, 0, 0), character.rect.move(self.offset), 2)
-            self.display_surface.blit(character.image, offset_pos)
+            offset_pos = character.rect.topleft + self.offset - self.internal_offset
+            pygame.draw.rect(self.internal_surf, (255, 0, 0), character.rect.move(self.offset - self.internal_offset), 2)
+            self.internal_surf.blit(character.image, offset_pos)
         #pygame.draw.rect(self.display_surface, (0, 255, 0), self.camera_rect, 5)
+        #add if statement to limit size
+        scaled_surf = pygame.transform.scale(self.internal_surf, self.internal_surf_size_vector * self.zoom_scale)
+        scaled_rect = scaled_surf.get_rect(center=(self.half_width, self.half_height))
+        self.display_surface.blit(scaled_surf, scaled_rect)
 
 class Pathfinder(Object):
     def __init__ (self,name,Owner,HP,Energy,Range,Speed,Map,screen,x,y):

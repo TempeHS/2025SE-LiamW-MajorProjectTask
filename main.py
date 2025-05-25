@@ -11,6 +11,7 @@ import classes as Class
 pygame.init()
 screen = pygame.display.set_mode((1280, 720))
 clock = pygame.time.Clock()
+pygame.event.set_grab(True) 
 running = True
 dt = 0
 clicking = False
@@ -75,6 +76,11 @@ while running:
         location = [mx, my]
         if event.type == pygame.QUIT:
             running = False
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                running = False
+        if event.type == pygame.MOUSEWHEEL:
+            cameralist.zoom_scale += event.y * 0.03
         if event.type == pygame.MOUSEBUTTONDOWN:
             #all mouse inputs
             if event.button == 1:  

@@ -70,11 +70,12 @@ class Object(pygame.sprite.Sprite):
         self.rect.center = self.pos
 
 class CameraGroup(pygame.sprite.Group):
-    def __init__(self):
+    def __init__(self,Map):
         super().__init__()
         self.display_surface = pygame.display.get_surface()
         self.ground_surf = pygame.image.load('assets/backgroundstandin.png').convert()
         self.ground_rect = self.ground_surf.get_rect(topleft = (0,0))
+        self.Map = Map
         #camera offset
         self.offset = pygame.math.Vector2(100,100)
         
@@ -179,6 +180,15 @@ class CameraGroup(pygame.sprite.Group):
             #self.zoom_scale -= 0.1
         pass
 
+    def draw_grid(self, surface, ground_offset):
+        # Draw grid lines or cells
+        for row in range(len(self.Map)):
+            for col in range(len(self.Map[0])):
+                cell_x = ground_offset.x + col * 32
+                cell_y = ground_offset.y + row * 32
+                rect = pygame.Rect(cell_x, cell_y, 32, 32)
+                pygame.draw.rect(surface, (200, 200, 200), rect, 1)  # Draw grid cell outline
+
     def custom_draw(self,player):
         # dead zone camera
         #self.box_target_camera(player)
@@ -193,6 +203,7 @@ class CameraGroup(pygame.sprite.Group):
 
         ground_offset = self.ground_rect.topleft + self.offset - self.internal_offset
         self.internal_surf.blit(self.ground_surf, ground_offset)
+        self.draw_grid(self.internal_surf, ground_offset)
         # Collect all characters from all sprites
         all_characters = []
         for sprites in self.sprites():
@@ -210,6 +221,7 @@ class CameraGroup(pygame.sprite.Group):
         scaled_surf = pygame.transform.scale(self.internal_surf, self.internal_surf_size_vector * self.zoom_scale)
         scaled_rect = scaled_surf.get_rect(center=(self.half_width, self.half_height))
         self.display_surface.blit(scaled_surf, scaled_rect)
+
 
 class Pathfinder(Object):
     def __init__ (self,name,Owner,HP,Energy,Range,Speed,Map,screen,x,y,zoom_scale):
@@ -259,8 +271,8 @@ class Pathfinder(Object):
             current_cell_value = self.Map[row][col]
             if current_cell_value == 1:
                 cell_size = 32 * zoom_scale
-                cell_screen_x = (col * 32 - offset.x + internal_offset.x) * zoom_scale + offset_x
-                cell_screen_y = (row * 32 - offset.y + internal_offset.y) * zoom_scale + offset_y
+                cell_screen_x = (col * 32 + 16 - offset.x + internal_offset.x) * zoom_scale + offset_x
+                cell_screen_y = (row * 32 + 16 - offset.y + internal_offset.y) * zoom_scale + offset_y
                 rect = pygame.Rect((cell_screen_x, cell_screen_y), (cell_size, cell_size))
                 screen.blit(pygame.transform.scale(self.select_surf, (int(cell_size), int(cell_size))), rect)
 

@@ -54,11 +54,11 @@ Map = [[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]]
 
-cameralist = Class.CameraGroup()
-structurelist = Class.CameraGroup()
-unitlist = Class.CameraGroup()
-resourcelist = Class.CameraGroup()
-workerlist = Class.CameraGroup()
+cameralist = Class.CameraGroup(Map)
+structurelist = Class.CameraGroup(Map)
+unitlist = Class.CameraGroup(Map)
+resourcelist = Class.CameraGroup(Map)
+workerlist = Class.CameraGroup(Map)
 Base = Class.Base("base","Me",100,100,0,Map,screen,300,300,workerlist,cameralist.zoom_scale)
 Structure = Class.Structure("structure","Me",100,100,0,Map,screen,450,450, unitlist, cameralist.zoom_scale)
 Unit = Class.Unit("unit","Me",100,100,0,2,Map,screen,350,350, cameralist.zoom_scale)

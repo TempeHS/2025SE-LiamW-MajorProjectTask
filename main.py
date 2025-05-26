@@ -33,6 +33,7 @@ Map = [[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+       [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
        [1,0,1,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
        [1,0,1,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
        [1,0,1,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
@@ -58,11 +59,11 @@ structurelist = Class.CameraGroup()
 unitlist = Class.CameraGroup()
 resourcelist = Class.CameraGroup()
 workerlist = Class.CameraGroup()
-Base = Class.Base("base","Me",100,100,0,Map,screen,300,300,workerlist)
-Structure = Class.Structure("structure","Me",100,100,0,Map,screen,450,450,unitlist)
-Unit = Class.Unit("unit","Me",100,100,0,2,Map,screen,350,350)
-Resource = Class.Resource("resource","Me",Map,screen,100,100,10)
-Worker = Class.Worker("worker","Me",100,100,0,2,Map,screen,200,200)
+Base = Class.Base("base","Me",100,100,0,Map,screen,300,300,workerlist,cameralist.zoom_scale)
+Structure = Class.Structure("structure","Me",100,100,0,Map,screen,450,450, unitlist, cameralist.zoom_scale)
+Unit = Class.Unit("unit","Me",100,100,0,2,Map,screen,350,350, cameralist.zoom_scale)
+Resource = Class.Resource("resource","Me",Map,screen,100,100,10, cameralist.zoom_scale)
+Worker = Class.Worker("worker","Me",100,100,0,2,Map,screen,200,200, cameralist.zoom_scale)
 structurelist.add(Base,Structure)
 unitlist.add(Unit)
 resourcelist.add(Resource)
@@ -71,6 +72,8 @@ cameralist.add(structurelist,unitlist,resourcelist,workerlist)
 
 player_pos = pygame.Vector2(screen.get_width() / 2, screen.get_height() / 2)
 offset = cameralist.offset
+internal_offset = cameralist.internal_offset
+# main game loop
 while running:
 	# poll for events
     for event in pygame.event.get():
@@ -87,11 +90,11 @@ while running:
             #all mouse inputs
             if event.button == 1:  
                 for units in unitlist:
-                    units.create_path(offset)
+                    units.create_path(offset,internal_offset,cameralist.zoom_scale)
                 for structures in structurelist:
-                    structures.create_path(offset)
+                    structures.create_path(offset,internal_offset,cameralist.zoom_scale)
                 for worker in workerlist:
-                    worker.create_path(offset)
+                    worker.create_path(offset,internal_offset,cameralist.zoom_scale)
         if event.type == pygame.KEYDOWN:
             #all keyboard inputs
             #queue
@@ -105,10 +108,10 @@ while running:
     # fill the screen with a color to wipe away anything from last frame
     #screen.blit(bg_surf,(0,0))
     cameralist.custom_draw(Worker.character.sprite)
-    workerlist.update(screen,resourcelist,structurelist,offset)
-    unitlist.update(screen,offset)
-    resourcelist.update(screen,offset)
-    structurelist.update(screen,dt,Map,offset)
+    workerlist.update(screen,resourcelist,structurelist,offset, internal_offset, cameralist.zoom_scale)
+    unitlist.update(screen,offset, internal_offset, cameralist.zoom_scale)
+    resourcelist.update(screen,offset, internal_offset, cameralist.zoom_scale)
+    structurelist.update(screen,dt,Map,offset, internal_offset, cameralist.zoom_scale)
 
     for structure in structurelist:
         try:

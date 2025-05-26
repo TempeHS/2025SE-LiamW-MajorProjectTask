@@ -144,18 +144,22 @@ class CameraGroup(pygame.sprite.Group):
                 mouse_offset_vector.x = mouse.x - right_border
                 pygame.mouse.set_pos(right_border, mouse.y)
         elif mouse.y < top_border:
-            if  mouse.x < left_border:
-                mouse_offset_vector.x = mouse - pygame.math.Vector2(left_border, top_border)
-                pygame  .mouse.set_pos(left_border, top_border)
-            if mouse.x > right_border:
-                mouse_offset_vector.x = mouse - pygame.math.Vector2(right_border, top_border)
+            if mouse.x < left_border:
+                mouse_offset_vector.x = mouse.x - left_border
+                mouse_offset_vector.y = mouse.y - top_border
+                pygame.mouse.set_pos(left_border, top_border)
+            elif mouse.x > right_border:
+                mouse_offset_vector.x = mouse.x - right_border
+                mouse_offset_vector.y = mouse.y - top_border
                 pygame.mouse.set_pos(right_border, top_border)
         elif mouse.y > bottom_border:
             if mouse.x < left_border:
-                mouse_offset_vector.x = mouse - pygame.math.Vector2(left_border, bottom_border)
+                mouse_offset_vector.x = mouse.x - left_border
+                mouse_offset_vector.y = mouse.y - bottom_border
                 pygame.mouse.set_pos(left_border, bottom_border)
-            if mouse.x > right_border:
-                mouse_offset_vector.x = mouse - pygame.math.Vector2(right_border, bottom_border)
+            elif mouse.x > right_border:
+                mouse_offset_vector.x = mouse.x - right_border
+                mouse_offset_vector.y = mouse.y - bottom_border
                 pygame.mouse.set_pos(right_border, bottom_border)
 
         if left_border < mouse.x < right_border:
@@ -181,7 +185,9 @@ class CameraGroup(pygame.sprite.Group):
         
         #self.keyboard_camera()
         self.mouse_camera()
-        self.internal_surf.fill(('#4a4a4a'))  # Fill the internal surface with a color
+        self.internal_surf.fill(("#408ff7"))  # Fill the internal surface with a color
+
+        #self.internal_surf.blit(self.ground_surf, (0, 600))
         #for centred around player camera will be used for control groups
             #self.center_target_camera(player)
 
@@ -206,12 +212,12 @@ class CameraGroup(pygame.sprite.Group):
         self.display_surface.blit(scaled_surf, scaled_rect)
 
 class Pathfinder(Object):
-    def __init__ (self,name,Owner,HP,Energy,Range,Speed,Map,screen,x,y):
+    def __init__ (self,name,Owner,HP,Energy,Range,Speed,Map,screen,x,y,zoom_scale):
         super().__init__(name,Owner,HP,Energy,Range,Speed,self.empty_path,x,y)
         self.Map = Map
         self.grid = Grid(matrix = Map)
-        self.select_surf = pygame.transform.scale(pygame.image.load('assets/mouse_cursor.png').convert_alpha(),(1280/32,1280/32))
-        self.select_point = pygame.transform.scale(pygame.image.load('assets/path_point.png').convert_alpha(),(1280/32,1280/32))
+        self.select_surf = pygame.transform.scale(pygame.image.load('assets/mouse_cursor.png').convert_alpha(),(1280/(32*zoom_scale),1280/(32*zoom_scale)))
+        self.select_point = pygame.transform.scale(pygame.image.load('assets/path_point.png').convert_alpha(),(1280/(32*zoom_scale),1280/(32*zoom_scale)))
         self.screen = screen
         self.path = []
         self.character = pygame.sprite.GroupSingle(Object(name,Owner,HP,Energy,Range,Speed,self.empty_path,x,y))
@@ -225,40 +231,58 @@ class Pathfinder(Object):
         point = [x,y]
         return point
 
-    def draw_active_cell(self,screen):
-        notin = True
-        mouse_pos = pygame.mouse.get_pos()
-        row = math.floor(mouse_pos[1] / 32)
-        col = math.floor(mouse_pos[0] / 32)
-        while notin is True:
-            try:
-                current_cell_value = self.Map[row][col]
-                notin = False
-            except IndexError:
-                #make this better later
-                if row < 0:
-                    row = 0
-                if col < 0:
-                    col = 0
-                if col > 32:
-                    col = 32
-                if row > 32:
-                    row = 32
+    def screen_to_internal(self,mouse_pos, internal_surf_size, display_size, zoom_scale):
+        # Find the top-left of the scaled internal_surf on the display
+        scaled_size = (internal_surf_size[0] * zoom_scale, internal_surf_size[1] * zoom_scale)
+        offset_x = (display_size[0] - scaled_size[0]) // 2
+        offset_y = (display_size[1] - scaled_size[1]) // 2
+        # Convert mouse position to internal_surf coordinates
+        internal_x = (mouse_pos[0] - offset_x) / zoom_scale
+        internal_y = (mouse_pos[1] - offset_y) / zoom_scale
+        return internal_x, internal_y
 
-        if current_cell_value == 1:
-            rect = pygame.Rect((col * 32, row * 32),(32,32))
-            screen.blit(self.select_surf, rect)
-
-    def create_path(self,offset):
-        # Get mouse position in screen coordinates
+    def draw_active_cell(self, screen, offset, internal_offset, zoom_scale):
         mouse_pos = pygame.mouse.get_pos()
-        # Add camera offset to get world coordinates
-        world_mouse_x = mouse_pos[0] - offset.x
-        world_mouse_y = mouse_pos[1] - offset.y
+        display_size = pygame.display.get_surface().get_size()
+        internal_surf_size = screen.get_size()
+        scaled_size = (internal_surf_size[0] * zoom_scale, internal_surf_size[1] * zoom_scale)
+        offset_x = (display_size[0] - scaled_size[0]) // 2
+        offset_y = (display_size[1] - scaled_size[1]) // 2
+
+        internal_x = (mouse_pos[0] - offset_x) / zoom_scale
+        internal_y = (mouse_pos[1] - offset_y) / zoom_scale
+
+        col = math.floor((internal_x + offset.x - internal_offset.x) / 32)
+        row = math.floor((internal_y + offset.y - internal_offset.y) / 32)
+
+        if 0 <= row < len(self.Map) and 0 <= col < len(self.Map[0]):
+            current_cell_value = self.Map[row][col]
+            if current_cell_value == 1:
+                cell_size = 32 * zoom_scale
+                cell_screen_x = (col * 32 - offset.x + internal_offset.x) * zoom_scale + offset_x
+                cell_screen_y = (row * 32 - offset.y + internal_offset.y) * zoom_scale + offset_y
+                rect = pygame.Rect((cell_screen_x, cell_screen_y), (cell_size, cell_size))
+                screen.blit(pygame.transform.scale(self.select_surf, (int(cell_size), int(cell_size))), rect)
+
+    def create_path(self, offset, internal_offset, zoom_scale):
+        mouse_pos = pygame.mouse.get_pos()
+        # Calculate scaled cell size
+        cell_size = 32 * zoom_scale
+
+        # Use the same math as draw_active_cell for mouse-to-grid
+        display_size = pygame.display.get_surface().get_size()
+        internal_surf_size = self.screen.get_size()
+        scaled_size = (internal_surf_size[0] * zoom_scale, internal_surf_size[1] * zoom_scale)
+        offset_x = (display_size[0] - scaled_size[0]) // 2
+        offset_y = (display_size[1] - scaled_size[1]) // 2
+        internal_x = (mouse_pos[0] - offset_x) / zoom_scale
+        internal_y = (mouse_pos[1] - offset_y) / zoom_scale
+
+        endx = math.floor((internal_x - offset.x + internal_offset.x) / 32)
+        endy = math.floor((internal_y - offset.y + internal_offset.y) / 32)
 
         startx, starty = self.character.sprite.get_coord()
         start = self.grid.node(startx, starty)
-        endx, endy = math.floor(world_mouse_x / 32), math.floor(world_mouse_y / 32)
         end = self.grid.node(endx, endy)
 
         finder = AStarFinder(diagonal_movement=DiagonalMovement.always)
@@ -266,29 +290,37 @@ class Pathfinder(Object):
         self.grid.cleanup()
         self.character.sprite.set_path(self.path)
 
-    def draw_path(self, screen, offset):
+    def draw_path(self, screen, offset, internal_offset, zoom_scale):
         if self.path:
+            cell_size = 32 * zoom_scale
+            display_size = pygame.display.get_surface().get_size()
+            internal_surf_size = screen.get_size()
+            scaled_size = (internal_surf_size[0] * zoom_scale, internal_surf_size[1] * zoom_scale)
+            offset_x = (display_size[0] - scaled_size[0]) // 2
+            offset_y = (display_size[1] - scaled_size[1]) // 2
+
             points = []
             for point in self.path:
                 point = self.gridIntoInt(point)
-                x = (point[0] * 32) + 16 + offset.x
-                y = (point[1] * 32) + 16 + offset.y
+                x = (point[0] * 32 + offset.x - internal_offset.x) * zoom_scale + offset_x + cell_size
+                y = (point[1] * 32 + offset.y - internal_offset.y) * zoom_scale + offset_y + cell_size 
                 points.append((x, y))
-                pygame.draw.circle(screen, '#4a4a4a', (x, y), 2)
-            if not len(points) == 1:
-                pygame.draw.lines(screen, '#4a4a4a', False, points, 5)
+                pygame.draw.circle(screen, '#4a4a4a', (int(x), int(y)), max(2, int(2 * zoom_scale)))
+            if len(points) > 1:
+                pygame.draw.lines(screen, '#4a4a4a', False, points, max(1, int(5 * zoom_scale)))
                 tempx, tempy = points[-1]
-                screen.blit(self.select_point, (tempx - 16, tempy - 16))
+                scaled_point = pygame.transform.scale(self.select_point, (int(cell_size), int(cell_size)))
+                screen.blit(scaled_point, (tempx - cell_size / 2, tempy - cell_size / 2))
 
-    def update(self,screen,offset):
-        self.draw_active_cell(screen)
-        self.draw_path(screen,offset)
+    def update(self,screen,offset,internal_offset,zoom_scale):
+        self.draw_active_cell(screen,offset,internal_offset,zoom_scale)
+        self.draw_path(screen,offset,internal_offset,zoom_scale)
         self.character.update(screen)
         #self.character.draw(screen)
 
 class Structure(Pathfinder):
-    def __init__(self,name,Owner,HP,Energy,Range,Map,screen,x,y,unitlist):
-        super().__init__(name,Owner,HP,Energy,Range,0,Map,screen,x,y)
+    def __init__(self,name,Owner,HP,Energy,Range,Map,screen,x,y,unitlist, zoom_scale):
+        super().__init__(name,Owner,HP,Energy,Range,0,Map,screen,x,y,zoom_scale)
         for character in self.character:
             character.image = pygame.image.load('assets/structurestandin.png').convert_alpha()
             character.rect =  character.image.get_rect(center = (x,y))
@@ -324,7 +356,7 @@ class Structure(Pathfinder):
                 proflag[n]  = 0
                 break
             n -= 1
-    def createunit(self,Map,screen):
+    def createunit(self,Map,screen,zoom_scale):
         #placeholder build timer
         unitTime = 8
         if self.queue[0] >= unitTime:
@@ -341,25 +373,25 @@ class Structure(Pathfinder):
             self.proflag = newflag
             Queue[4] = 0
             self.queue = newqueue
-            Man = Unit("man","Me",100,100,0,2,Map,screen,600,600)
+            Man = Unit("man","Me",100,100,0,2,Map,screen,600,600,zoom_scale)
             for character in self.character:
                 character.image = pygame.image.load('assets/structurestandin.png').convert_alpha()
             self.ulist.add(Man)
 
 
-    def update(self,screen,time,Map,offset):
-        self.draw_active_cell(screen)
-        self.draw_path(screen,offset)
+    def update(self,screen,time,Map,offset,internal_offset,zoom_scale):
+        self.draw_active_cell(screen,offset,internal_offset,zoom_scale)
+        self.draw_path(screen,offset,internal_offset,zoom_scale)
         self.character.update(screen)
         #self.character.draw(screen)
         productionflag = self.proflag
         if 1 in productionflag:
             self.production(time)
-        self.createunit(Map,screen)
+        self.createunit(Map,screen, zoom_scale)
 
 class Unit(Pathfinder):
-    def __init__(self,name,Owner,HP,Energy,Range,Speed,Map,screen,x,y):
-        super().__init__(name,Owner,HP,Energy,Range,Speed,Map,screen,x,y)
+    def __init__(self,name,Owner,HP,Energy,Range,Speed,Map,screen,x,y,zoom_scale):
+        super().__init__(name,Owner,HP,Energy,Range,Speed,Map,screen,x,y,zoom_scale)
         for character in self.character:
             character.image = pygame.image.load('assets/playerstandin.png').convert_alpha()
             character.rect =  character.image.get_rect(center = (x,y))
@@ -367,8 +399,8 @@ class Unit(Pathfinder):
         self.Type = 0
 
 class Worker(Unit):
-    def __init__(self,name,Owner,HP,Energy,Range,Speed,Map,screen,x,y):
-        super().__init__(name,Owner,HP,Energy,Range,Speed,Map,screen,x,y)
+    def __init__(self,name,Owner,HP,Energy,Range,Speed,Map,screen,x,y,zoom_scale):
+        super().__init__(name,Owner,HP,Energy,Range,Speed,Map,screen,x,y,zoom_scale)
         for character in self.character:
             character.image = pygame.image.load('assets/workerstandin.png').convert_alpha()
             character.rect = character.image.get_rect(center = (x,y))
@@ -376,9 +408,6 @@ class Worker(Unit):
         self.Speed = 1.5  # Workers are slower than units
         self.mining_progress = 0
         self.has_mined = False
-    
-    def draw_active_cell(self, screen):
-        return super().draw_active_cell(screen)
     
     def resourcecollectcol(self,resourcelist):
         if not self.has_mined:
@@ -433,9 +462,9 @@ class Worker(Unit):
             self.has_mined = True
             # You can also remove the resource from the game or update its state
 
-    def update(self,screen,resourcelist,structurelist,offset):
-        self.draw_active_cell(screen)
-        self.draw_path(screen,offset)
+    def update(self,screen,resourcelist,structurelist,offset,internal_offset,zoom_scale):
+        self.draw_active_cell(screen,offset,internal_offset,zoom_scale)
+        self.draw_path(screen,offset,internal_offset,zoom_scale)
         self.character.update(screen)
         self.resourcecollectcol(resourcelist)
         self.baseputcol(structurelist)
@@ -443,8 +472,8 @@ class Worker(Unit):
         #print(f"Updated rect: {self.rect.center}, Position: {self.pos}")
 
 class Resource(Pathfinder):
-    def __init__(self,name,Owner,Map,screen,x,y,resources):
-        super().__init__(name,Owner,0,0,0,0,Map,screen,x,y)
+    def __init__(self,name,Owner,Map,screen,x,y,resources,zoom_scale):
+        super().__init__(name,Owner,0,0,0,0,Map,screen,x,y,zoom_scale)
         for character in self.character:
             character.image = pygame.image.load('assets/resourcestandin.png').convert_alpha()
             character.rect =  character.image.get_rect(center = (x,y))
@@ -452,8 +481,8 @@ class Resource(Pathfinder):
         self.resources = resources
 
 class Base(Structure):
-    def __init__(self,name,Owner,HP,Energy,Range,Map,screen,x,y,workerlist):
-        super().__init__(name,Owner,HP,Energy,Range,Map,screen,x,y,0)
+    def __init__(self,name,Owner,HP,Energy,Range,Map,screen,x,y,workerlist,zoom_scale):
+        super().__init__(name,Owner,HP,Energy,Range,Map,screen,x,y,0,zoom_scale)
         for character in self.character:
             character.image = pygame.image.load('assets/structurestandin.png').convert_alpha()
             character.rect =  character.image.get_rect(center = (x,y))
@@ -463,7 +492,7 @@ class Base(Structure):
         self.queue = [0,0,0,0,0]
         self.proflag = [0,0,0,0,0]
 
-    def createunit(self,Map,screen):
+    def createunit(self,Map,screen,zoom_scale):
         #placeholder build timer
         unitTime = 5
         if self.queue[0] >= unitTime:
@@ -480,7 +509,7 @@ class Base(Structure):
             self.proflag = newflag
             Queue[4] = 0
             self.queue = newqueue
-            Man = Worker("man1","Me",100,100,0,2,Map,screen,300,300)
+            Man = Worker("man1","Me",100,100,0,2,Map,screen,300,300,zoom_scale)
             for character in self.character:
                 character.image = pygame.image.load('assets/structurestandin.png').convert_alpha()
             self.wlist.add(Man)

@@ -77,7 +77,7 @@ class CameraGroup(pygame.sprite.Group):
         self.ground_rect = self.ground_surf.get_rect(topleft = (0,0))
         self.Map = Map
         #camera offset
-        self.offset = pygame.math.Vector2(100,100)
+        self.offset = pygame.math.Vector2()
         
         #for centered camera
         self.half_width = self.display_surface.get_size()[0] // 2
@@ -96,7 +96,7 @@ class CameraGroup(pygame.sprite.Group):
         self.internal_offset.x = self.internal_surf_size[0] // 2 - self.half_width
         self.internal_offset.y = self.internal_surf_size[1] // 2 - self.half_height
 
-        self.camera_borders = {'left': 200, 'right': 200, 'top': 200, 'bottom': 200}
+        self.camera_borders = {'left': 100, 'right': 100, 'top': 100, 'bottom': 100}
         l = self.camera_borders["left"]
         t = self.camera_borders["top"]
         w = self.display_surface.get_size()[0] - (self.camera_borders["left"] + self.camera_borders["right"])
@@ -216,11 +216,12 @@ class CameraGroup(pygame.sprite.Group):
             offset_pos = character.rect.topleft + self.offset - self.internal_offset
             pygame.draw.rect(self.internal_surf, (255, 0, 0), character.rect.move(self.offset - self.internal_offset), 2)
             self.internal_surf.blit(character.image, offset_pos)
-        #pygame.draw.rect(self.display_surface, (0, 255, 0), self.camera_rect, 5)
+        
         #add if statement to limit size
         scaled_surf = pygame.transform.scale(self.internal_surf, self.internal_surf_size_vector * self.zoom_scale)
         scaled_rect = scaled_surf.get_rect(center=(self.half_width, self.half_height))
         self.display_surface.blit(scaled_surf, scaled_rect)
+        pygame.draw.rect(self.display_surface, (0, 255, 0), self.camera_rect, 5)
 
 
 class Pathfinder(Object):
@@ -264,8 +265,11 @@ class Pathfinder(Object):
         internal_x = (mouse_pos[0] - offset_x) / zoom_scale
         internal_y = (mouse_pos[1] - offset_y) / zoom_scale
 
-        col = math.floor((internal_x + offset.x - internal_offset.x) / 32)
-        row = math.floor((internal_y + offset.y - internal_offset.y) / 32)
+        world_x = internal_x + offset.x - internal_offset.x
+        world_y = internal_y + offset.y - internal_offset.y
+
+        col = math.floor((world_x) / 32)
+        row = math.floor((world_y) / 32)
 
         if 0 <= row < len(self.Map) and 0 <= col < len(self.Map[0]):
             current_cell_value = self.Map[row][col]
@@ -289,9 +293,11 @@ class Pathfinder(Object):
         offset_y = (display_size[1] - scaled_size[1]) // 2
         internal_x = (mouse_pos[0] - offset_x) / zoom_scale
         internal_y = (mouse_pos[1] - offset_y) / zoom_scale
+        world_x = internal_x - offset.x + internal_offset.x + (610 + 16) * zoom_scale
+        world_y = internal_y - offset.y + internal_offset.y + (890 + 16) * zoom_scale
 
-        endx = math.floor((internal_x - offset.x + internal_offset.x) / 32)
-        endy = math.floor((internal_y - offset.y + internal_offset.y) / 32)
+        endx = math.floor((world_x) / 32)
+        endy = math.floor((world_y) / 32)
 
         startx, starty = self.character.sprite.get_coord()
         start = self.grid.node(startx, starty)
@@ -314,8 +320,8 @@ class Pathfinder(Object):
             points = []
             for point in self.path:
                 point = self.gridIntoInt(point)
-                x = (point[0] * 32 + offset.x - internal_offset.x) * zoom_scale + offset_x + cell_size
-                y = (point[1] * 32 + offset.y - internal_offset.y) * zoom_scale + offset_y + cell_size 
+                x = (point[0] * 32 + offset.x - internal_offset.x) * zoom_scale + offset_x + cell_size - (610 + 16)* zoom_scale
+                y = (point[1] * 32 + offset.y - internal_offset.y) * zoom_scale + offset_y + cell_size - (890 + 16)* zoom_scale
                 points.append((x, y))
                 pygame.draw.circle(screen, '#4a4a4a', (int(x), int(y)), max(2, int(2 * zoom_scale)))
             if len(points) > 1:

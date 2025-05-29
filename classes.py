@@ -265,7 +265,7 @@ class Pathfinder(Object):
         internal_x = (mouse_pos[0] - offset_x) / zoom_scale
         internal_y = (mouse_pos[1] - offset_y) / zoom_scale
 
-        world_x = internal_x + offset.x - internal_offset.x
+        world_x = internal_x + offset.x - internal_offset.x 
         world_y = internal_y + offset.y - internal_offset.y
 
         col = math.floor((world_x) / 32)
@@ -275,8 +275,8 @@ class Pathfinder(Object):
             current_cell_value = self.Map[row][col]
             if current_cell_value == 1:
                 cell_size = 32 * zoom_scale
-                cell_screen_x = (col * 32 + 16 - offset.x + internal_offset.x) * zoom_scale + offset_x
-                cell_screen_y = (row * 32 + 16 - offset.y + internal_offset.y) * zoom_scale + offset_y
+                cell_screen_x = (col * 32 + 16 - offset.x + internal_offset.x) * zoom_scale + offset_x + 1
+                cell_screen_y = (row * 32 + 16 - offset.y + internal_offset.y) * zoom_scale + offset_y + 1
                 rect = pygame.Rect((cell_screen_x, cell_screen_y), (cell_size, cell_size))
                 screen.blit(pygame.transform.scale(self.select_surf, (int(cell_size), int(cell_size))), rect)
 
@@ -293,8 +293,8 @@ class Pathfinder(Object):
         offset_y = (display_size[1] - scaled_size[1]) // 2
         internal_x = (mouse_pos[0] - offset_x) / zoom_scale
         internal_y = (mouse_pos[1] - offset_y) / zoom_scale
-        world_x = internal_x - offset.x + internal_offset.x + (610 + 16) * zoom_scale
-        world_y = internal_y - offset.y + internal_offset.y + (890 + 16) * zoom_scale
+        world_x = internal_x - offset.x + internal_offset.x + (internal_offset.x)
+        world_y = internal_y - offset.y + internal_offset.y + (internal_offset.y)
 
         endx = math.floor((world_x) / 32)
         endy = math.floor((world_y) / 32)
@@ -320,8 +320,8 @@ class Pathfinder(Object):
             points = []
             for point in self.path:
                 point = self.gridIntoInt(point)
-                x = (point[0] * 32 + offset.x - internal_offset.x) * zoom_scale + offset_x + cell_size - (610 + 16)* zoom_scale
-                y = (point[1] * 32 + offset.y - internal_offset.y) * zoom_scale + offset_y + cell_size - (890 + 16)* zoom_scale
+                x = (point[0] * 32 + offset.x - internal_offset.x) * zoom_scale + offset_x + cell_size - (internal_offset.x + 16)* zoom_scale
+                y = (point[1] * 32 + offset.y - internal_offset.y) * zoom_scale + offset_y + cell_size - (internal_offset.y + 16)* zoom_scale
                 points.append((x, y))
                 pygame.draw.circle(screen, '#4a4a4a', (int(x), int(y)), max(2, int(2 * zoom_scale)))
             if len(points) > 1:

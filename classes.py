@@ -262,23 +262,36 @@ class Pathfinder(Object):
         offset_x = (display_size[0] - scaled_size[0]) // 2
         offset_y = (display_size[1] - scaled_size[1]) // 2
 
+        # Convert mouse to internal surface coordinates
         internal_x = (mouse_pos[0] - offset_x) / zoom_scale
         internal_y = (mouse_pos[1] - offset_y) / zoom_scale
 
-        world_x = internal_x + offset.x - internal_offset.x 
+        # Convert to world coordinates
+        world_x = internal_x + offset.x - internal_offset.x
         world_y = internal_y + offset.y - internal_offset.y
 
-        col = math.floor((world_x) / 32)
-        row = math.floor((world_y) / 32)
+        # Get grid cell
+        col = int(world_x // 32)
+        row = int(world_y // 32)
 
-        if 0 <= row < len(self.Map) and 0 <= col < len(self.Map[0]):
-            current_cell_value = self.Map[row][col]
-            if current_cell_value == 1:
-                cell_size = 32 * zoom_scale
-                cell_screen_x = (col * 32 + 16 - offset.x + internal_offset.x) * zoom_scale + offset_x + 1
-                cell_screen_y = (row * 32 + 16 - offset.y + internal_offset.y) * zoom_scale + offset_y + 1
-                rect = pygame.Rect((cell_screen_x, cell_screen_y), (cell_size, cell_size))
-                screen.blit(pygame.transform.scale(self.select_surf, (int(cell_size), int(cell_size))), rect)
+        # Clamp to valid range
+        row = max(0, min(row, len(self.Map) - 1))
+        col = max(0, min(col, len(self.Map[0]) - 1))
+
+        current_cell_value = self.Map[row][col]
+        #print(f"row={row}, col={col}, value={current_cell_value}")
+
+        if current_cell_value == 1:
+            cell_size = 32 * zoom_scale
+            # Use the same math as draw_grid for the top-left of the cell
+            cell_world_x = col * 32
+            cell_world_y = row * 32
+            cell_internal_x = cell_world_x - offset.x + internal_offset.x
+            cell_internal_y = cell_world_y - offset.y + internal_offset.y
+            cell_screen_x = cell_internal_x * zoom_scale + offset_x
+            cell_screen_y = cell_internal_y * zoom_scale + offset_y
+            rect = pygame.Rect((cell_screen_x, cell_screen_y), (cell_size, cell_size))
+            screen.blit(pygame.transform.scale(self.select_surf, (int(cell_size), int(cell_size))), rect)
 
     def create_path(self, offset, internal_offset, zoom_scale):
         mouse_pos = pygame.mouse.get_pos()
@@ -341,8 +354,10 @@ class Structure(Pathfinder):
         super().__init__(name,Owner,HP,Energy,Range,0,Map,screen,x,y,zoom_scale)
         for character in self.character:
             character.image = pygame.image.load('assets/structurestandin.png').convert_alpha()
-            character.rect =  character.image.get_rect(center = (x,y))
-            character.pos = character.rect.center
+            bounding_rect = character.image.get_bounding_rect()
+            cropped_image = character.image.subsurface(bounding_rect).copy()
+            character.image = cropped_image
+            character.rect = cropped_image.get_rect(center=(x, y))
         self.ulist = unitlist
         self.queue = [0,0,0,0,0]
         self.proflag = [0,0,0,0,0]
@@ -412,7 +427,9 @@ class Unit(Pathfinder):
         super().__init__(name,Owner,HP,Energy,Range,Speed,Map,screen,x,y,zoom_scale)
         for character in self.character:
             character.image = pygame.image.load('assets/playerstandin.png').convert_alpha()
-            character.rect =  character.image.get_rect(center = (x,y))
+            bounding_rect = character.image.get_bounding_rect()
+            cropped_image = character.image.subsurface(bounding_rect).copy()
+            character.rect =  cropped_image.image.get_rect(center = (x,y))
             character.pos = character.rect.center
         self.Type = 0
 
@@ -421,7 +438,9 @@ class Worker(Unit):
         super().__init__(name,Owner,HP,Energy,Range,Speed,Map,screen,x,y,zoom_scale)
         for character in self.character:
             character.image = pygame.image.load('assets/workerstandin.png').convert_alpha()
-            character.rect = character.image.get_rect(center = (x,y))
+            bounding_rect = character.image.get_bounding_rect()
+            cropped_image = character.image.subsurface(bounding_rect).copy()
+            character.rect =  cropped_image.image.get_rect(center = (x,y))
             character.pos = character.rect.center
         self.Speed = 1.5  # Workers are slower than units
         self.mining_progress = 0
@@ -494,7 +513,9 @@ class Resource(Pathfinder):
         super().__init__(name,Owner,0,0,0,0,Map,screen,x,y,zoom_scale)
         for character in self.character:
             character.image = pygame.image.load('assets/resourcestandin.png').convert_alpha()
-            character.rect =  character.image.get_rect(center = (x,y))
+            bounding_rect = character.image.get_bounding_rect()
+            cropped_image = character.image.subsurface(bounding_rect).copy()
+            character.rect =  cropped_image.image.get_rect(center = (x,y))
             character.pos = character.rect.center
         self.resources = resources
 
@@ -503,7 +524,9 @@ class Base(Structure):
         super().__init__(name,Owner,HP,Energy,Range,Map,screen,x,y,0,zoom_scale)
         for character in self.character:
             character.image = pygame.image.load('assets/structurestandin.png').convert_alpha()
-            character.rect =  character.image.get_rect(center = (x,y))
+            bounding_rect = character.image.get_bounding_rect()
+            cropped_image = character.image.subsurface(bounding_rect).copy()
+            character.rect =  cropped_image.image.get_rect(center = (x,y))
             character.pos = character.rect.center
         self.wlist = workerlist
         self.resource = 0

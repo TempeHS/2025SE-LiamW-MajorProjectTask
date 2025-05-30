@@ -353,11 +353,11 @@ class Structure(Pathfinder):
     def __init__(self,name,Owner,HP,Energy,Range,Map,screen,x,y,unitlist, zoom_scale):
         super().__init__(name,Owner,HP,Energy,Range,0,Map,screen,x,y,zoom_scale)
         for character in self.character:
-            character.image = pygame.image.load('assets/structurestandin.png').convert_alpha()
+            character.image = pygame.image.load('assets/resourcestandin.png').convert_alpha()
             bounding_rect = character.image.get_bounding_rect()
             cropped_image = character.image.subsurface(bounding_rect).copy()
-            character.image = cropped_image
-            character.rect = cropped_image.get_rect(center=(x, y))
+            character.rect =  cropped_image.image.get_rect(center = (x,y))
+            character.pos = character.rect.center
         self.ulist = unitlist
         self.queue = [0,0,0,0,0]
         self.proflag = [0,0,0,0,0]
@@ -437,7 +437,7 @@ class Worker(Unit):
     def __init__(self,name,Owner,HP,Energy,Range,Speed,Map,screen,x,y,zoom_scale):
         super().__init__(name,Owner,HP,Energy,Range,Speed,Map,screen,x,y,zoom_scale)
         for character in self.character:
-            character.image = pygame.image.load('assets/workerstandin.png').convert_alpha()
+            character.image = pygame.image.load('assets/resourcestandin.png').convert_alpha()
             bounding_rect = character.image.get_bounding_rect()
             cropped_image = character.image.subsurface(bounding_rect).copy()
             character.rect =  cropped_image.image.get_rect(center = (x,y))

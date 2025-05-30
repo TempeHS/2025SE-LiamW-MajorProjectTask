@@ -345,10 +345,40 @@ class Pathfinder(Object):
                 scaled_point = pygame.transform.scale(self.select_point, (int(cell_size), int(cell_size)))
                 screen.blit(scaled_point, (tempx - cell_size / 2, tempy - cell_size / 2))
 
-    def update(self,screen,offset,internal_offset,zoom_scale):
+    def collision(self, cameralist):
+        for character in self.character:
+            for cam in cameralist:
+                if character.name is not cam.name:
+                    for character2 in cam.character:
+                        if character.rect.colliderect(character2.rect):
+                            print(f"character: {character}, character.pos: {character.pos}, type: {type(character.pos)}")
+                            print(f"cam: {cam}, cam.pos: {getattr(cam, 'pos', None)}, type: {type(getattr(cam, 'pos', None))}")
+                            # Calculate the overlap rectangle
+                            overlap = character.rect.clip(character2.rect)
+                            
+                            if overlap.width < overlap.height:
+                                # Move in x direction
+                                if character.rect.centerx < cam.rect.centerx:
+                                    character.pos.x -= overlap.width * self.Speed
+                                else:
+                                    character.pos.x += overlap.width * self.Speed
+                            else:
+                                # Move in y direction
+                                if character.rect.centery < cam.rect.centery:
+                                    character.pos.y -= overlap.height * self.Speed
+                                else:
+                                    character.pos.y += overlap.height * self.Speed
+                            character.rect.center = character.pos
+                            character.path = []
+                            character.collision_rects = []
+                            character.get_direction()
+
+    def update(self,screen,offset,internal_offset,zoom_scale,cameralist):
         self.draw_active_cell(screen,offset,internal_offset,zoom_scale)
         self.draw_path(screen,offset,internal_offset,zoom_scale)
+        self.collision(cameralist)
         self.character.update(screen)
+
         #self.character.draw(screen)
 
 class Structure(Pathfinder):
@@ -394,9 +424,10 @@ class Structure(Pathfinder):
             self.ulist.add(Man)
 
 
-    def update(self,screen,time,Map,offset,internal_offset,zoom_scale):
+    def update(self,screen,time,Map,offset,internal_offset,zoom_scale,cameralist):
         self.draw_active_cell(screen,offset,internal_offset,zoom_scale)
         self.draw_path(screen,offset,internal_offset,zoom_scale)
+        self.collision(cameralist)
         self.character.update(screen)
         #self.character.draw(screen)
         productionflag = self.proflag
@@ -469,12 +500,14 @@ class Worker(Unit):
             self.has_mined = True
             # You can also remove the resource from the game or update its state
 
-    def update(self,screen,resourcelist,structurelist,offset,internal_offset,zoom_scale):
+    def update(self,screen,resourcelist,structurelist,cameralist,offset,internal_offset,zoom_scale):
         self.draw_active_cell(screen,offset,internal_offset,zoom_scale)
         self.draw_path(screen,offset,internal_offset,zoom_scale)
+        self.collision(cameralist)
         self.character.update(screen)
         self.resourcecollectcol(resourcelist)
         self.baseputcol(structurelist)
+        
         #self.character.draw(screen)
         #print(f"Updated rect: {self.rect.center}, Position: {self.pos}")
 

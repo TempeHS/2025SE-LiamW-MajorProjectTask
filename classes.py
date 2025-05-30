@@ -5,6 +5,9 @@ from pathfinding.core.grid import Grid
 from pathfinding.finder.a_star import AStarFinder
 from pathfinding.core.diagonal_movement import DiagonalMovement
 
+import unitsetup as setup
+import production as pro
+
 class Object(pygame.sprite.Sprite):
     def __init__(self,name,Owner,HP,Energy,Range,Speed,empty_path,x,y):
         super().__init__()
@@ -223,7 +226,6 @@ class CameraGroup(pygame.sprite.Group):
         self.display_surface.blit(scaled_surf, scaled_rect)
         pygame.draw.rect(self.display_surface, (0, 255, 0), self.camera_rect, 5)
 
-
 class Pathfinder(Object):
     def __init__ (self,name,Owner,HP,Energy,Range,Speed,Map,screen,x,y,zoom_scale):
         super().__init__(name,Owner,HP,Energy,Range,Speed,self.empty_path,x,y)
@@ -352,20 +354,14 @@ class Pathfinder(Object):
 class Structure(Pathfinder):
     def __init__(self,name,Owner,HP,Energy,Range,Map,screen,x,y,unitlist, zoom_scale):
         super().__init__(name,Owner,HP,Energy,Range,0,Map,screen,x,y,zoom_scale)
-        for character in self.character:
-            character.image = pygame.image.load('assets/structurestandin.png').convert_alpha()
-            bounding_rect = character.image.get_bounding_rect()
-            cropped_image = character.image.subsurface(bounding_rect).copy()
-            character.rect =  cropped_image.get_rect(center = (x,y))
-            character.pos = character.rect.center
+        setup.spriteSet(self, 'assets/structurestandin.png', x, y)
         self.ulist = unitlist
         self.queue = [0,0,0,0,0]
         self.proflag = [0,0,0,0,0]
     
     def production(self,time):
         productionflag = self.proflag
-        for character in self.character:
-            character.image = pygame.image.load('assets/structurestandinactive.png').convert_alpha()
+        setup.spriteSetUpdate(self, 'assets/structurestandinactive.png')
         n = 0
         for slot in productionflag:
             if slot == 1:
@@ -392,23 +388,9 @@ class Structure(Pathfinder):
     def createunit(self,Map,screen,zoom_scale):
         #placeholder build timer
         unitTime = 8
-        if self.queue[0] >= unitTime:
-            Queue = self.queue
-            newqueue = [0,0,0,0,0]
-            newflag = [0,0,0,0,0]
-            for slot in Queue:
-                num = Queue.index(slot) + 1
-                newqueue[Queue.index(slot)] = Queue[num]
-            Queue = newqueue
-            for slot in self.proflag:
-                num = self.proflag.index(slot) + 1
-                newflag[self.proflag.index(slot)] = self.proflag[num]
-            self.proflag = newflag
-            Queue[4] = 0
-            self.queue = newqueue
+        if pro.produce(self,unitTime):
             Man = Unit("man","Me",100,100,0,2,Map,screen,600,600,zoom_scale)
-            for character in self.character:
-                character.image = pygame.image.load('assets/structurestandin.png').convert_alpha()
+            setup.spriteSetUpdate(self, 'assets/structurestandin.png')
             self.ulist.add(Man)
 
 
@@ -425,25 +407,13 @@ class Structure(Pathfinder):
 class Unit(Pathfinder):
     def __init__(self,name,Owner,HP,Energy,Range,Speed,Map,screen,x,y,zoom_scale):
         super().__init__(name,Owner,HP,Energy,Range,Speed,Map,screen,x,y,zoom_scale)
-        for character in self.character:
-            image = pygame.image.load('assets/playerstandin.png').convert_alpha()
-            bounding_rect = image.get_bounding_rect()
-            cropped_image = image.subsurface(bounding_rect).copy()
-            character.image = cropped_image
-            character.rect = cropped_image.get_rect(center=(x, y))
-            character.pos = character.rect.center
+        setup.spriteSet(self, 'assets/playerstandin.png', x, y)
         self.Type = 0
 
 class Worker(Unit):
     def __init__(self,name,Owner,HP,Energy,Range,Speed,Map,screen,x,y,zoom_scale):
         super().__init__(name,Owner,HP,Energy,Range,Speed,Map,screen,x,y,zoom_scale)
-        for character in self.character:
-            image = pygame.image.load('assets/workerstandin.png').convert_alpha()
-            bounding_rect = image.get_bounding_rect()
-            cropped_image = image.subsurface(bounding_rect).copy()
-            character.image = cropped_image
-            character.rect = cropped_image.get_rect(center=(x, y))
-            character.pos = character.rect.center
+        setup.spriteSet(self, 'assets/workerstandin.png', x, y)
         self.Speed = 1.5  # Workers are slower than units
         self.mining_progress = 0
         self.has_mined = False
@@ -513,25 +483,13 @@ class Worker(Unit):
 class Resource(Pathfinder):
     def __init__(self,name,Owner,Map,screen,x,y,resources,zoom_scale):
         super().__init__(name,Owner,0,0,0,0,Map,screen,x,y,zoom_scale)
-        for character in self.character:
-            image = pygame.image.load('assets/resourcestandin.png').convert_alpha()
-            bounding_rect = image.get_bounding_rect()
-            cropped_image = image.subsurface(bounding_rect).copy()
-            character.image = cropped_image
-            character.rect = cropped_image.get_rect(center=(x, y))
-            character.pos = character.rect.center
+        setup.spriteSet(self, 'assets/resourcestandin.png', x, y)
         self.resources = resources
 
 class Base(Structure):
     def __init__(self,name,Owner,HP,Energy,Range,Map,screen,x,y,workerlist,zoom_scale):
         super().__init__(name,Owner,HP,Energy,Range,Map,screen,x,y,0,zoom_scale)
-        for character in self.character:
-            image = pygame.image.load('assets/structurestandin.png').convert_alpha()
-            bounding_rect = image.get_bounding_rect()
-            cropped_image = image.subsurface(bounding_rect).copy()
-            character.image = cropped_image
-            character.rect = cropped_image.get_rect(center=(x, y))
-            character.pos = character.rect.center
+        setup.spriteSet(self, 'assets/structurestandin.png',x,y)
         self.wlist = workerlist
         self.resource = 0
         self.queue = [0,0,0,0,0]
@@ -540,21 +498,7 @@ class Base(Structure):
     def createunit(self,Map,screen,zoom_scale):
         #placeholder build timer
         unitTime = 5
-        if self.queue[0] >= unitTime:
-            Queue = self.queue
-            newqueue = [0,0,0,0,0]
-            newflag = [0,0,0,0,0]
-            for slot in Queue:
-                num = Queue.index(slot) + 1
-                newqueue[Queue.index(slot)] = Queue[num]
-            Queue = newqueue
-            for slot in self.proflag:
-                num = self.proflag.index(slot) + 1
-                newflag[self.proflag.index(slot)] = self.proflag[num]
-            self.proflag = newflag
-            Queue[4] = 0
-            self.queue = newqueue
+        if pro.produce(self,unitTime):
             Man = Worker("man1","Me",100,100,0,2,Map,screen,300,300,zoom_scale)
-            for character in self.character:
-                character.image = pygame.image.load('assets/structurestandin.png').convert_alpha()
+            setup.spriteSetUpdate(self, 'assets/structurestandin.png')
             self.wlist.add(Man)

@@ -456,7 +456,7 @@ class Worker(Unit):
         print("Resource deposited!")
         for character in self.character:
             pygame.math.Vector2(-character.direction)
-            character.image = pygame.image.load('assets/workerstandin.png').convert_alpha()
+            setup.spriteSetUpdate(self, 'assets/workerstandin.png')
         self.has_mined = False
 
     def mining(self):
@@ -465,9 +465,7 @@ class Worker(Unit):
             # Handle resource collection here
             print("Resource collected!")
             self.mining_progress = 0
-            for character in self.character:
-                pygame.math.Vector2(-character.direction)
-                character.image = pygame.image.load('assets/workerwithRstandin.png').convert_alpha()
+            setup.spriteSetUpdate(self, 'assets/workerwithRstandin.png')
             self.has_mined = True
             # You can also remove the resource from the game or update its state
 

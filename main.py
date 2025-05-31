@@ -108,10 +108,10 @@ while running:
     # fill the screen with a color to wipe away anything from last frame
     #screen.blit(bg_surf,(0,0))
     cameralist.custom_draw(Worker.character.sprite)
-    workerlist.update(screen,resourcelist,structurelist,cameralist,offset, internal_offset, cameralist.zoom_scale)
-    unitlist.update(screen,offset, internal_offset, cameralist.zoom_scale, cameralist)
-    resourcelist.update(screen,offset, internal_offset, cameralist.zoom_scale, cameralist)
-    structurelist.update(screen,dt,Map,offset, internal_offset, cameralist.zoom_scale, cameralist)
+    workerlist.update(screen,resourcelist,structurelist,cameralist,offset, internal_offset, cameralist.zoom_scale,[structurelist, unitlist, resourcelist, workerlist])
+    unitlist.update(screen,offset, internal_offset, cameralist.zoom_scale, cameralist, [structurelist, unitlist, resourcelist, workerlist])
+    resourcelist.update(screen,offset, internal_offset, cameralist.zoom_scale, cameralist,[structurelist, unitlist, resourcelist, workerlist])
+    structurelist.update(screen,dt,Map,offset, internal_offset, cameralist.zoom_scale, cameralist,[structurelist, unitlist, resourcelist, workerlist])
 
     for structure in structurelist:
         try:

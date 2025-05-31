@@ -358,7 +358,8 @@ class Pathfinder(Object):
                 if character.name is not cam.name:
                     for character2 in cam.character:
                         if character.rect.colliderect(character2.rect):
-                            
+                            # Convert character.pos to Vector2 if it's not already
+                            character.pos = pygame.math.Vector2(character.pos)
                             print(f"character: {character}, character.pos: {character.pos}, type: {type(character.pos)}")
                             print(f"cam: {cam}, cam.pos: {getattr(cam, 'pos', None)}, type: {type(getattr(cam, 'pos', None))}")
                             # Calculate the overlap rectangle
@@ -383,11 +384,12 @@ class Pathfinder(Object):
                                 if self.Speed > 0:
                                     self.repositionGridCenter(colliders)
                                 self.flag = False
+                                character.path = []
+                                character.collision_rects = []
+                                character.get_direction()
                             else:
                                 self.flag = True
-                            character.path = []
-                            character.collision_rects = []
-                            character.get_direction()
+
 
 
 

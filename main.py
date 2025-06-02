@@ -7,6 +7,7 @@ from sys import exit
 import math
 
 import classes as Class
+import mouseStuff as mouse
 
 
 pygame.init()
@@ -69,6 +70,7 @@ unitlist.add(Unit)
 resourcelist.add(Resource)
 workerlist.add(Worker)
 cameralist.add(structurelist,unitlist,resourcelist,workerlist)
+mouse = mouse.Mouse()
 
 player_pos = pygame.Vector2(screen.get_width() / 2, screen.get_height() / 2)
 offset = cameralist.offset
@@ -88,7 +90,7 @@ while running:
             cameralist.zoom_scale += event.y * 0.03
         if event.type == pygame.MOUSEBUTTONDOWN:
             #all mouse inputs
-            if event.button == 1:  
+            if event.button == 3:  
                 for units in unitlist:
                     units.create_path(offset,internal_offset,cameralist.zoom_scale)
                 for structures in structurelist:
@@ -127,8 +129,8 @@ while running:
             for unit in structure.ulist:
                 unitlist.add(unit)
                 cameralist.add(unit)
-
-
+    
+    mouse.selection(screen)
 
     pygame.display.update()
     # limits FPS to 60

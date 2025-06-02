@@ -14,7 +14,8 @@ class Mouse():
         self.selection_rect = None
         self.flag = True
 
-    def selectioncol(self,selrect, colliders, offset, internal_offset, zoom_scale, screen):
+    def selectioncol(self,selrect, colliders, offset, internal_offset, zoom_scale, screen, cameralist):
+        gonelist = list(cameralist)
         cell_size = 32 * zoom_scale
         display_size = pygame.display.get_surface().get_size()
         internal_surf_size = screen.get_size()
@@ -35,16 +36,21 @@ class Mouse():
                     pygame.draw.rect(screen, (0, 255, 0), char_rect, 2)  # Draw character rect for debugging
                     if selrect.colliderect(char_rect):
                         print(f"Collision with {character.name}")
+                        collider.selected = True
+                        gonelist.remove(collider)
+
+        for goner in gonelist:
+            goner.selected = False
 
 
-    def selection(self, screen,colliders, offset, internal_offset, zoom_scale):
+    def selection(self, screen,colliders, offset, internal_offset, zoom_scale, cameralist):
         if pygame.mouse.get_pressed()[0]:  # Left mouse button
             mouse_pos = pygame.mouse.get_pos()
             if self.flag:
                 self.mouse_pos_start = mouse_pos
                 self.flag = False
             self.selection_rect = pygame.Rect(self.mouse_pos_start[0], self.mouse_pos_start[1], mouse_pos[0] - self.mouse_pos_start[0], mouse_pos[1] - self.mouse_pos_start[1])
-            self.selectioncol(self.selection_rect, colliders, offset, internal_offset, zoom_scale, screen)
+            self.selectioncol(self.selection_rect, colliders, offset, internal_offset, zoom_scale, screen,cameralist)
             pygame.draw.rect(screen, (255, 0, 0), self.selection_rect, 2)
 
         else:

@@ -92,20 +92,25 @@ while running:
             #all mouse inputs
             if event.button == 3:  
                 for units in unitlist:
-                    units.create_path(offset,internal_offset,cameralist.zoom_scale)
+                    if units.selected:
+                        units.create_path(offset,internal_offset,cameralist.zoom_scale)
                 for structures in structurelist:
-                    structures.create_path(offset,internal_offset,cameralist.zoom_scale)
+                    if structures.selected:
+                        structures.create_path(offset,internal_offset,cameralist.zoom_scale)
                 for worker in workerlist:
-                    worker.create_path(offset,internal_offset,cameralist.zoom_scale)
+                    if worker.selected:
+                        worker.create_path(offset,internal_offset,cameralist.zoom_scale)
         if event.type == pygame.KEYDOWN:
             #all keyboard inputs
             #queue
             if event.key == pygame.K_b:
                 for structures in structurelist:
-                    structures.startqueue()
+                    if structures.selected:
+                        structures.startqueue()
             if event.key == pygame.K_c:
                 for structures in structurelist:
-                    structures.stopqueue()
+                    if structures.selected:
+                        structures.stopqueue()
 
     # fill the screen with a color to wipe away anything from last frame
     #screen.blit(bg_surf,(0,0))
@@ -128,7 +133,7 @@ while running:
                 unitlist.add(unit)
                 cameralist.add(unit)
     
-    mouse.selection(screen,[structurelist, unitlist, resourcelist, workerlist],offset, internal_offset, cameralist.zoom_scale)
+    mouse.selection(screen,[structurelist, unitlist, resourcelist, workerlist],offset, internal_offset, cameralist.zoom_scale,cameralist)
 
     pygame.display.update()
     # limits FPS to 60

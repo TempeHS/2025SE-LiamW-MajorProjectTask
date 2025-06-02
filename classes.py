@@ -24,6 +24,7 @@ class Object(pygame.sprite.Sprite):
         self.empty_path = empty_path
         self.image = pygame.Surface((32, 32))
         self.rect = self.image.get_rect(center=(x, y))
+        self.selected = False
     
     @classmethod
     def spawn(self,screen,location): #this is not used

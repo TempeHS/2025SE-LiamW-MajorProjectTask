@@ -242,6 +242,9 @@ class Pathfinder(Object):
         self.screen = screen
         self.path = []
         self.flag = False
+        self.collision_frames = 0
+        self.last_collision_pos = None
+        self.last_collision_pos2 = None
         self.character = pygame.sprite.GroupSingle(Object(name,Owner,HP,Energy,Range,Speed,self.empty_path,x,y))
 
     def empty_path(self):
@@ -354,17 +357,20 @@ class Pathfinder(Object):
 
     def collision(self, cameralist, colliders):
         for character in self.character:
+            collided = False
+            grid_size = 32
             for cam in cameralist:
                 if character.name is not cam.name:
                     for character2 in cam.character:
                         if character.rect.colliderect(character2.rect):
+                            collided = True
                             # Convert character.pos to Vector2 if it's not already
                             character.pos = pygame.math.Vector2(character.pos)
-                            print(f"character: {character}, character.pos: {character.pos}, type: {type(character.pos)}")
-                            print(f"cam: {cam}, cam.pos: {getattr(cam, 'pos', None)}, type: {type(getattr(cam, 'pos', None))}")
+                            #print(f"character: {character}, character.pos: {character.pos}, type: {type(character.pos)}")
+                            #print(f"cam: {cam}, cam.pos: {getattr(cam, 'pos', None)}, type: {type(getattr(cam, 'pos', None))}")
                             # Calculate the overlap rectangle
                             overlap = character.rect.clip(character2.rect)
-                            
+                            """
                             if overlap.width < overlap.height:
                                 # Move in x direction
                                 if character.rect.centerx < cam.rect.centerx:
@@ -378,26 +384,56 @@ class Pathfinder(Object):
                                 else:
                                     character.pos.y += overlap.height * self.Speed
                             character.rect.center = character.pos
+                            """
                             
                             # this is the get unstuck code for special cases if you want it to be every second time an object collides with the same object then you gotta change it lol
-                            if self.flag == True:
-                                if self.Speed > 0:
-                                    self.repositionGridCenter(colliders)
-                                self.flag = False
+                            
+                            collision_point = (int(character.pos.x // grid_size), int(character.pos.y // grid_size))
+                            print(f"Collision at {collision_point} for {character.name}")
+                            if self.last_collision_pos == collision_point:
+                                self.collision_frames += 1
+                            elif self.last_collision_pos2 == collision_point:   
+                                self.collision_frames += 1
+                            else:
+                                if self.last_collision_pos is not None:
+                                    self.last_collision_pos2 = collision_point
+                                else:
+                                    self.collision_frames = 1
+                                    self.last_collision_pos = collision_point
+                                
+
+                            if self.collision_frames > 10:  # Threshold (10 frames)
                                 character.path = []
                                 character.collision_rects = []
                                 character.get_direction()
+                                self.collision_frames = 0
+                                self.last_collision_pos = None
                             else:
-                                self.flag = True
+                                #if self.flag == True:
+                                if self.Speed > 0:
+                                    self.repositionGridCenter(colliders)
+                                    """
+                                    self.flag = False
+                                else:
+                                    self.flag = True
+                                """
+                            break
+                    if collided:
+                        break
+
+            if not collided:
+                if self.last_collision_pos is not None:
+                    current_grid = (int(character.pos.x // grid_size), int(character.pos.y // grid_size))
+                    if current_grid != self.last_collision_pos:
+                        self.collision_frames = 0
+                        self.last_collision_pos = None
 
 
-
-
-    def repositionGridCenter(self, colliders, grid_size=32, search_radius=3):
+    def repositionGridCenter(self, colliders, grid_size=32, search_radius=1):
         """
-        Move the sprite's character to the nearest grid center (within search_radius) that does not collide with any collider.
+        Move the sprite's character to the nearest grid center (within search_radius) that does not collide with any collider,
+        but do NOT clear the path—allow the unit to continue following its path.
         """
-        # For each character in this Pathfinder (usually just one)
         for character in self.character:
             current_grid_x = int(character.pos.x // grid_size)
             current_grid_y = int(character.pos.y // grid_size)
@@ -431,12 +467,11 @@ class Pathfinder(Object):
                         if collision:
                             break
                 if not collision:
-                    # Move to this grid center
+                    # Move to this grid center, but do NOT clear the path
                     character.pos = center
                     character.rect.center = character.pos
-                    character.direction = pygame.math.Vector2(0, 0)
-                    character.path = []
-                    character.collision_rects = []
+                    # Recalculate direction to next path point
+                    character.get_direction()
                     return True  # Successfully repositioned
 
         # If no free grid found, do nothing

@@ -428,7 +428,6 @@ class Pathfinder(Object):
                         self.collision_frames = 0
                         self.last_collision_pos = None
 
-
     def repositionGridCenter(self, colliders, grid_size=32, search_radius=1):
         """
         Move the sprite's character to the nearest grid center (within search_radius) that does not collide with any collider,

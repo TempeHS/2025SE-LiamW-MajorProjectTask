@@ -111,8 +111,6 @@ while running:
     #screen.blit(bg_surf,(0,0))
     cameralist.custom_draw(Worker.character.sprite)
     workerlist.update(screen,resourcelist,structurelist,cameralist,offset, internal_offset, cameralist.zoom_scale,[structurelist, unitlist, resourcelist, workerlist])
-    for worker in workerlist:
-        pass
     unitlist.update(screen,offset, internal_offset, cameralist.zoom_scale, cameralist, [structurelist, unitlist, resourcelist, workerlist])
     resourcelist.update(screen,offset, internal_offset, cameralist.zoom_scale, cameralist,[structurelist, unitlist, resourcelist, workerlist])
     structurelist.update(screen,dt,Map,offset, internal_offset, cameralist.zoom_scale, cameralist,[structurelist, unitlist, resourcelist, workerlist])
@@ -130,7 +128,7 @@ while running:
                 unitlist.add(unit)
                 cameralist.add(unit)
     
-    mouse.selection(screen)
+    mouse.selection(screen,[structurelist, unitlist, resourcelist, workerlist],offset, internal_offset, cameralist.zoom_scale)
 
     pygame.display.update()
     # limits FPS to 60

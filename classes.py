@@ -554,13 +554,14 @@ class Worker(Unit):
         self.has_mined = False
     
     def resourcecollectcol(self,resourcelist,cameralist,colliders):
-        
+        Rcollision = False
         if not self.has_mined:
             for resource in resourcelist:
                 #print(f"Worker rect: {self.rect}, Resource rect: {resource.rect}")
                 for rcharacter in resource.character:
                     for character in self.character:
                         if character.rect.colliderect(rcharacter.rect):
+                            Rcollision = True
                             print("Collision with resource!")
                             #need to rework logic for later to be if the user clicks on the resource then they stop at the resource which will stop locking the worker class to the resource
                             character.direction = pygame.math.Vector2(0,0)
@@ -568,7 +569,8 @@ class Worker(Unit):
                             break
                     else:
                         self.mining_progress = 0
-        else:
+
+        if not Rcollision:
             self.collision(cameralist,colliders)
 
     def baseputcol(self,structurelist,cameralist,colliders):
@@ -587,8 +589,9 @@ class Worker(Unit):
                             break
                     else:
                         self.mining_progress = 0
-        else:
-            self.collision(cameralist,colliders)
+        
+        #else:
+            #self.collision(cameralist,colliders)
     
     def putting(self):
         # Handle resource collection here
@@ -611,8 +614,8 @@ class Worker(Unit):
     def update(self,screen,resourcelist,structurelist,cameralist,offset,internal_offset,zoom_scale,colliders):
         self.draw_active_cell(screen,offset,internal_offset,zoom_scale)
         self.draw_path(screen,offset,internal_offset,zoom_scale)
-        self.resourcecollectcol(resourcelist,cameralist,colliders)
         self.baseputcol(structurelist,cameralist,colliders)
+        self.resourcecollectcol(resourcelist,cameralist,colliders)
         self.character.update(screen)
 
         #self.character.draw(screen)

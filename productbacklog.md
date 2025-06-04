@@ -8,14 +8,14 @@
 6. ~~main base child class from structure class~~
 7. ~~standin sprite for worker with resource~~
 8. ~~camera system~~
-9. general collision system
-10. ownership system for units (enemy, ally)
+9. ~~general collision system~~
+10. ~~ownership system for units (enemy, ally)~~
 11. enemy interaction (attacking)
 12. Autopathing (workers and structures)
 13. UI overlay
-14. create basic AI (hard coded)
-15. create sprites
-16. create map sprite
+14. create map sprite
+15. create basic AI (hard coded)
+16. create sprites
 17. Elevation mechanics (flying units and terrain)
 18. Implement other camera control options
 19. create three different factions for the game (classes again)

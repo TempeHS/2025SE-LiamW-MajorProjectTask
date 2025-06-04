@@ -477,6 +477,30 @@ class Pathfinder(Object):
         # If no free grid found, do nothing
         return False
 
+    def attack(self,search_radius=self.Range,grid_size, zoom_scale,colliders):
+        for character in self.character:
+            current_grid_x = int(character.pos.x)
+            current_grid_y = int(character.pos.y)
+            scalefactor = 32 * zoom_scale
+            search_radius = search_radius * scale_factor
+            candidate_centers = []
+
+            # change this to find nearest enemy in range centre  
+            for collidergroup in colliders
+                for collide in collidergroup
+                    for character in collide.character:
+                        center = character.pos
+                        dist = (center - character.pos).length()
+                        if dist <= search_radius: #make sure to scale to zoom factor
+                            candidate_centers.append((dist, center))
+
+            # Sort by distance to current position
+            candidate_centers.sort(key=lambda tup: tup[0])
+
+            candidate_centers[0].HP -= 5
+            print(f"{candidate_centers[0].name} is down to {candidate_centers[0].HP} HP")
+
+
     def update(self,screen,offset,internal_offset,zoom_scale,cameralist, colliders):
         self.draw_active_cell(screen,offset,internal_offset,zoom_scale)
         self.draw_path(screen,offset,internal_offset,zoom_scale)

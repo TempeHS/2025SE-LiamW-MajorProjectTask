@@ -10,13 +10,14 @@
 8. ~~camera system~~
 9. general collision system
 10. ownership system for units (enemy, ally)
-11. Autopathing (workers and structures)
-12. UI overlay
-13. create basic AI (hard coded)
-14. create sprites
-15. create map sprite
-16. Elevation mechanics (flying units and terrain)
-17. Implement other camera control options
-18. create three different factions for the game (classes again)
-19. make UI 
-20. try ML a proper AI
+11. enemy interaction (attacking)
+12. Autopathing (workers and structures)
+13. UI overlay
+14. create basic AI (hard coded)
+15. create sprites
+16. create map sprite
+17. Elevation mechanics (flying units and terrain)
+18. Implement other camera control options
+19. create three different factions for the game (classes again)
+20. make UI 
+21. try ML a proper AI

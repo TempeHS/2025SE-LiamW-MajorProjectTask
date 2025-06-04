@@ -65,7 +65,7 @@ Structure = Class.Structure("structure","Me",100,100,0,Map,screen,450,450, unitl
 Unit = Class.Unit("unit","Me",100,100,0,2,Map,screen,360,360, cameralist.zoom_scale)
 Resource = Class.Resource("resource","Me",Map,screen,100,100,10, cameralist.zoom_scale)
 Worker = Class.Worker("worker","Me",100,100,0,2,Map,screen,200,200, cameralist.zoom_scale)
-Enemy = Class.Unit("unit","Enemy",100,100,0,2,Map,screen,360,360, cameralist.zoom_scale)
+Enemy = Class.Unit("unitE","Enemy",100,100,0,2,Map,screen,600,600, cameralist.zoom_scale)
 structurelist.add(Base,Structure)
 unitlist.add(Unit)
 resourcelist.add(Resource)
@@ -95,15 +95,15 @@ while running:
             if event.button == 3:  
                 for units in unitlist:
                     if units.selected:
-                        if units.Owner:
+                        if units.Owner == "Me":
                             units.create_path(offset,internal_offset,cameralist.zoom_scale)
                 for structures in structurelist:
                     if structures.selected:
-                        if structures.Owner:
+                        if structures.Owner == "Me":
                             structures.create_path(offset,internal_offset,cameralist.zoom_scale)
                 for worker in workerlist:
                     if worker.selected:
-                        if worker.Owner:
+                        if worker.Owner == "Me":
                             worker.create_path(offset,internal_offset,cameralist.zoom_scale)
         if event.type == pygame.KEYDOWN:
             #all keyboard inputs
@@ -111,11 +111,13 @@ while running:
             if event.key == pygame.K_b:
                 for structures in structurelist:
                     if structures.selected:
-                        structures.startqueue()
+                        if structures.Owner == "Me":
+                            structures.startqueue()
             if event.key == pygame.K_c:
                 for structures in structurelist:
                     if structures.selected:
-                        structures.stopqueue()
+                        if structures.Owner == "Me":
+                            structures.stopqueue()
 
     # fill the screen with a color to wipe away anything from last frame
     #screen.blit(bg_surf,(0,0))

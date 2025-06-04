@@ -8,6 +8,9 @@ from pathfinding.core.diagonal_movement import DiagonalMovement
 
 def spriteSet(self,Image,x,y):
     for character in self.character:
+        if self.Owner != "Me":
+            before, after = Image.split(".")
+            Image = f"{before}E.{after}"
         image = pygame.image.load(Image).convert_alpha()
         bounding_rect = image.get_bounding_rect()
         cropped_image = image.subsurface(bounding_rect).copy()
@@ -17,6 +20,9 @@ def spriteSet(self,Image,x,y):
 
 def spriteSetUpdate(self,Image):
     for character in self.character:
+        if self.Owner != "Me":
+            before, after = Image.split(".")
+            Image = f"{before}E.{after}"
         image = pygame.image.load(Image).convert_alpha()
         bounding_rect = image.get_bounding_rect()
         cropped_image = image.subsurface(bounding_rect).copy()

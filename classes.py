@@ -5,6 +5,9 @@ from pathfinding.core.grid import Grid
 from pathfinding.finder.a_star import AStarFinder
 from pathfinding.core.diagonal_movement import DiagonalMovement
 
+import unitsetup as setup
+import production as pro
+
 class Object(pygame.sprite.Sprite):
     def __init__(self,name,Owner,HP,Energy,Range,Speed,empty_path,x,y):
         super().__init__()
@@ -21,6 +24,7 @@ class Object(pygame.sprite.Sprite):
         self.empty_path = empty_path
         self.image = pygame.Surface((32, 32))
         self.rect = self.image.get_rect(center=(x, y))
+        self.selected = False
     
     @classmethod
     def spawn(self,screen,location): #this is not used
@@ -49,8 +53,14 @@ class Object(pygame.sprite.Sprite):
         if self.collision_rects:
             start = pygame.math.Vector2(self.pos)
             end = pygame.math.Vector2(self.collision_rects[0].center)
-            self.direction = (end - start).normalize()
-            #print(self.direction)
+            delta = end - start
+            if delta.length() > 0:
+                self.direction = delta.normalize()
+            else:
+                self.direction = pygame.math.Vector2(0, 0)
+                # Optionally remove this collision rect and try the next
+                del self.collision_rects[0]
+                self.get_direction()
         else:
             self.direction = pygame.math.Vector2(0,0)
             self.path = []
@@ -96,7 +106,7 @@ class CameraGroup(pygame.sprite.Group):
         self.internal_offset.x = self.internal_surf_size[0] // 2 - self.half_width
         self.internal_offset.y = self.internal_surf_size[1] // 2 - self.half_height
 
-        self.camera_borders = {'left': 100, 'right': 100, 'top': 100, 'bottom': 100}
+        self.camera_borders = {'left': 50, 'right': 50, 'top': 50, 'bottom': 50}
         l = self.camera_borders["left"]
         t = self.camera_borders["top"]
         w = self.display_surface.get_size()[0] - (self.camera_borders["left"] + self.camera_borders["right"])
@@ -223,7 +233,6 @@ class CameraGroup(pygame.sprite.Group):
         self.display_surface.blit(scaled_surf, scaled_rect)
         pygame.draw.rect(self.display_surface, (0, 255, 0), self.camera_rect, 5)
 
-
 class Pathfinder(Object):
     def __init__ (self,name,Owner,HP,Energy,Range,Speed,Map,screen,x,y,zoom_scale):
         super().__init__(name,Owner,HP,Energy,Range,Speed,self.empty_path,x,y)
@@ -233,6 +242,10 @@ class Pathfinder(Object):
         self.select_point = pygame.transform.scale(pygame.image.load('assets/path_point.png').convert_alpha(),(1280/(32*zoom_scale),1280/(32*zoom_scale)))
         self.screen = screen
         self.path = []
+        self.flag = False
+        self.collision_frames = 0
+        self.last_collision_pos = None
+        self.last_collision_pos2 = None
         self.character = pygame.sprite.GroupSingle(Object(name,Owner,HP,Energy,Range,Speed,self.empty_path,x,y))
 
     def empty_path(self):
@@ -262,23 +275,36 @@ class Pathfinder(Object):
         offset_x = (display_size[0] - scaled_size[0]) // 2
         offset_y = (display_size[1] - scaled_size[1]) // 2
 
+        # Convert mouse to internal surface coordinates
         internal_x = (mouse_pos[0] - offset_x) / zoom_scale
         internal_y = (mouse_pos[1] - offset_y) / zoom_scale
 
-        world_x = internal_x + offset.x - internal_offset.x 
+        # Convert to world coordinates
+        world_x = internal_x + offset.x - internal_offset.x
         world_y = internal_y + offset.y - internal_offset.y
 
-        col = math.floor((world_x) / 32)
-        row = math.floor((world_y) / 32)
+        # Get grid cell
+        col = int(world_x // 32)
+        row = int(world_y // 32)
 
-        if 0 <= row < len(self.Map) and 0 <= col < len(self.Map[0]):
-            current_cell_value = self.Map[row][col]
-            if current_cell_value == 1:
-                cell_size = 32 * zoom_scale
-                cell_screen_x = (col * 32 + 16 - offset.x + internal_offset.x) * zoom_scale + offset_x + 1
-                cell_screen_y = (row * 32 + 16 - offset.y + internal_offset.y) * zoom_scale + offset_y + 1
-                rect = pygame.Rect((cell_screen_x, cell_screen_y), (cell_size, cell_size))
-                screen.blit(pygame.transform.scale(self.select_surf, (int(cell_size), int(cell_size))), rect)
+        # Clamp to valid range
+        row = max(0, min(row, len(self.Map) - 1))
+        col = max(0, min(col, len(self.Map[0]) - 1))
+
+        current_cell_value = self.Map[row][col]
+        #print(f"row={row}, col={col}, value={current_cell_value}")
+
+        if current_cell_value == 1:
+            cell_size = 32 * zoom_scale
+            # Use the same math as draw_grid for the top-left of the cell
+            cell_world_x = col * 32
+            cell_world_y = row * 32
+            cell_internal_x = cell_world_x - offset.x + internal_offset.x
+            cell_internal_y = cell_world_y - offset.y + internal_offset.y
+            cell_screen_x = cell_internal_x * zoom_scale + offset_x
+            cell_screen_y = cell_internal_y * zoom_scale + offset_y
+            rect = pygame.Rect((cell_screen_x, cell_screen_y), (cell_size, cell_size))
+            screen.blit(pygame.transform.scale(self.select_surf, (int(cell_size), int(cell_size))), rect)
 
     def create_path(self, offset, internal_offset, zoom_scale):
         mouse_pos = pygame.mouse.get_pos()
@@ -330,27 +356,146 @@ class Pathfinder(Object):
                 scaled_point = pygame.transform.scale(self.select_point, (int(cell_size), int(cell_size)))
                 screen.blit(scaled_point, (tempx - cell_size / 2, tempy - cell_size / 2))
 
-    def update(self,screen,offset,internal_offset,zoom_scale):
+    def collision(self, cameralist, colliders):
+        for character in self.character:
+            collided = False
+            grid_size = 32
+            for cam in cameralist:
+                if character.name is not cam.name:
+                    for character2 in cam.character:
+                        if character.rect.colliderect(character2.rect):
+                            collided = True
+                            # Convert character.pos to Vector2 if it's not already
+                            character.pos = pygame.math.Vector2(character.pos)
+                            #print(f"character: {character}, character.pos: {character.pos}, type: {type(character.pos)}")
+                            #print(f"cam: {cam}, cam.pos: {getattr(cam, 'pos', None)}, type: {type(getattr(cam, 'pos', None))}")
+                            # Calculate the overlap rectangle
+                            overlap = character.rect.clip(character2.rect)
+                            """
+                            if overlap.width < overlap.height:
+                                # Move in x direction
+                                if character.rect.centerx < cam.rect.centerx:
+                                    character.pos.x -= overlap.width * self.Speed
+                                else:
+                                    character.pos.x += overlap.width * self.Speed
+                            else:
+                                # Move in y direction
+                                if character.rect.centery < cam.rect.centery:
+                                    character.pos.y -= overlap.height * self.Speed
+                                else:
+                                    character.pos.y += overlap.height * self.Speed
+                            character.rect.center = character.pos
+                            """
+                            
+                            # this is the get unstuck code for special cases if you want it to be every second time an object collides with the same object then you gotta change it lol
+                            
+                            collision_point = (int(character.pos.x // grid_size), int(character.pos.y // grid_size))
+                            print(f"Collision at {collision_point} for {character.name}")
+                            if self.last_collision_pos == collision_point:
+                                self.collision_frames += 1
+                            elif self.last_collision_pos2 == collision_point:   
+                                self.collision_frames += 1
+                            else:
+                                if self.last_collision_pos is not None:
+                                    self.last_collision_pos2 = collision_point
+                                else:
+                                    self.collision_frames = 1
+                                    self.last_collision_pos = collision_point
+                                
+
+                            if self.collision_frames > 10:  # Threshold (10 frames)
+                                character.path = []
+                                character.collision_rects = []
+                                character.get_direction()
+                                self.collision_frames = 0
+                                self.last_collision_pos = None
+                            else:
+                                #if self.flag == True:
+                                if self.Speed > 0:
+                                    self.repositionGridCenter(colliders)
+                                    """
+                                    self.flag = False
+                                else:
+                                    self.flag = True
+                                """
+                            break
+                    if collided:
+                        break
+
+            if not collided:
+                if self.last_collision_pos is not None:
+                    current_grid = (int(character.pos.x // grid_size), int(character.pos.y // grid_size))
+                    if current_grid != self.last_collision_pos:
+                        self.collision_frames = 0
+                        self.last_collision_pos = None
+
+    def repositionGridCenter(self, colliders, grid_size=32, search_radius=1):
+        """
+        Move the sprite's character to the nearest grid center (within search_radius) that does not collide with any collider,
+        but do NOT clear the path—allow the unit to continue following its path.
+        """
+        for character in self.character:
+            current_grid_x = int(character.pos.x // grid_size)
+            current_grid_y = int(character.pos.y // grid_size)
+            candidate_centers = []
+
+            # Generate candidate grid centers within the search radius
+            for dx in range(-search_radius, search_radius + 1):
+                for dy in range(-search_radius, search_radius + 1):
+                    grid_x = current_grid_x + dx
+                    grid_y = current_grid_y + dy
+                    center = pygame.math.Vector2(grid_x * grid_size + grid_size // 2, grid_y * grid_size + grid_size // 2)
+                    dist = (center - character.pos).length()
+                    candidate_centers.append((dist, center))
+
+            # Sort by distance to current position
+            candidate_centers.sort(key=lambda tup: tup[0])
+
+            # Try each candidate
+            for dist, center in candidate_centers:
+                test_rect = character.rect.copy()
+                test_rect.center = center
+                collision = False
+                for collidergroup in colliders:
+                    for collider in collidergroup:
+                        if collider is self:
+                            continue
+                        for other in collider.character:
+                            if test_rect.colliderect(other.rect):
+                                collision = True
+                                break
+                        if collision:
+                            break
+                if not collision:
+                    # Move to this grid center, but do NOT clear the path
+                    character.pos = center
+                    character.rect.center = character.pos
+                    # Recalculate direction to next path point
+                    character.get_direction()
+                    return True  # Successfully repositioned
+
+        # If no free grid found, do nothing
+        return False
+
+    def update(self,screen,offset,internal_offset,zoom_scale,cameralist, colliders):
         self.draw_active_cell(screen,offset,internal_offset,zoom_scale)
         self.draw_path(screen,offset,internal_offset,zoom_scale)
+        self.collision(cameralist,colliders)
         self.character.update(screen)
+
         #self.character.draw(screen)
 
 class Structure(Pathfinder):
     def __init__(self,name,Owner,HP,Energy,Range,Map,screen,x,y,unitlist, zoom_scale):
         super().__init__(name,Owner,HP,Energy,Range,0,Map,screen,x,y,zoom_scale)
-        for character in self.character:
-            character.image = pygame.image.load('assets/structurestandin.png').convert_alpha()
-            character.rect =  character.image.get_rect(center = (x,y))
-            character.pos = character.rect.center
+        setup.spriteSet(self, 'assets/structurestandin.png', x, y)
         self.ulist = unitlist
         self.queue = [0,0,0,0,0]
         self.proflag = [0,0,0,0,0]
     
     def production(self,time):
         productionflag = self.proflag
-        for character in self.character:
-            character.image = pygame.image.load('assets/structurestandinactive.png').convert_alpha()
+        setup.spriteSetUpdate(self, 'assets/structurestandinactive.png')
         n = 0
         for slot in productionflag:
             if slot == 1:
@@ -376,30 +521,18 @@ class Structure(Pathfinder):
             n -= 1
     def createunit(self,Map,screen,zoom_scale):
         #placeholder build timer
-        unitTime = 8
-        if self.queue[0] >= unitTime:
-            Queue = self.queue
-            newqueue = [0,0,0,0,0]
-            newflag = [0,0,0,0,0]
-            for slot in Queue:
-                num = Queue.index(slot) + 1
-                newqueue[Queue.index(slot)] = Queue[num]
-            Queue = newqueue
-            for slot in self.proflag:
-                num = self.proflag.index(slot) + 1
-                newflag[self.proflag.index(slot)] = self.proflag[num]
-            self.proflag = newflag
-            Queue[4] = 0
-            self.queue = newqueue
-            Man = Unit("man","Me",100,100,0,2,Map,screen,600,600,zoom_scale)
-            for character in self.character:
-                character.image = pygame.image.load('assets/structurestandin.png').convert_alpha()
-            self.ulist.add(Man)
+        for character in self.character:
+            unitTime = 8
+            if pro.produce(self,unitTime):
+                Man = Unit("man",self.Owner,100,100,0,2,Map,screen,character.pos.x + 50,character.pos.y + 50,zoom_scale)
+                setup.spriteSetUpdate(self, 'assets/structurestandin.png')
+                self.ulist.add(Man)
 
 
-    def update(self,screen,time,Map,offset,internal_offset,zoom_scale):
+    def update(self,screen,time,Map,offset,internal_offset,zoom_scale,cameralist,colliders):
         self.draw_active_cell(screen,offset,internal_offset,zoom_scale)
         self.draw_path(screen,offset,internal_offset,zoom_scale)
+        self.collision(cameralist,colliders)
         self.character.update(screen)
         #self.character.draw(screen)
         productionflag = self.proflag
@@ -410,31 +543,27 @@ class Structure(Pathfinder):
 class Unit(Pathfinder):
     def __init__(self,name,Owner,HP,Energy,Range,Speed,Map,screen,x,y,zoom_scale):
         super().__init__(name,Owner,HP,Energy,Range,Speed,Map,screen,x,y,zoom_scale)
-        for character in self.character:
-            character.image = pygame.image.load('assets/playerstandin.png').convert_alpha()
-            character.rect =  character.image.get_rect(center = (x,y))
-            character.pos = character.rect.center
+        setup.spriteSet(self, 'assets/playerstandin.png', x, y)
         self.Type = 0
 
 class Worker(Unit):
     def __init__(self,name,Owner,HP,Energy,Range,Speed,Map,screen,x,y,zoom_scale):
         super().__init__(name,Owner,HP,Energy,Range,Speed,Map,screen,x,y,zoom_scale)
-        for character in self.character:
-            character.image = pygame.image.load('assets/workerstandin.png').convert_alpha()
-            character.rect = character.image.get_rect(center = (x,y))
-            character.pos = character.rect.center
+        setup.spriteSet(self, 'assets/workerstandin.png', x, y)
         self.Speed = 1.5  # Workers are slower than units
         self.mining_progress = 0
         self.has_mined = False
     
-    def resourcecollectcol(self,resourcelist):
+    def resourcecollectcol(self,resourcelist,cameralist,colliders):
+        Rcollision = False
         if not self.has_mined:
             for resource in resourcelist:
                 #print(f"Worker rect: {self.rect}, Resource rect: {resource.rect}")
                 for rcharacter in resource.character:
                     for character in self.character:
                         if character.rect.colliderect(rcharacter.rect):
-                            #print("Collision with resource!")
+                            Rcollision = True
+                            print("Collision with resource!")
                             #need to rework logic for later to be if the user clicks on the resource then they stop at the resource which will stop locking the worker class to the resource
                             character.direction = pygame.math.Vector2(0,0)
                             self.mining()
@@ -442,7 +571,10 @@ class Worker(Unit):
                     else:
                         self.mining_progress = 0
 
-    def baseputcol(self,structurelist):
+        if not Rcollision:
+            self.collision(cameralist,colliders)
+
+    def baseputcol(self,structurelist,cameralist,colliders):
         if self.has_mined:
             for structure in structurelist:
                 #print(f"Worker rect: {self.rect}, Resource rect: {resource.rect}")
@@ -455,17 +587,19 @@ class Worker(Unit):
                             structure.resource += 5
                             print(structure.resource)
                             #add updating resource counter in base here
-
                             break
                     else:
                         self.mining_progress = 0
+        
+        #else:
+            #self.collision(cameralist,colliders)
     
     def putting(self):
         # Handle resource collection here
         print("Resource deposited!")
         for character in self.character:
             pygame.math.Vector2(-character.direction)
-            character.image = pygame.image.load('assets/workerstandin.png').convert_alpha()
+            setup.spriteSetUpdate(self, 'assets/workerstandin.png')
         self.has_mined = False
 
     def mining(self):
@@ -474,37 +608,30 @@ class Worker(Unit):
             # Handle resource collection here
             print("Resource collected!")
             self.mining_progress = 0
-            for character in self.character:
-                pygame.math.Vector2(-character.direction)
-                character.image = pygame.image.load('assets/workerwithRstandin.png').convert_alpha()
+            setup.spriteSetUpdate(self, 'assets/workerwithRstandin.png')
             self.has_mined = True
             # You can also remove the resource from the game or update its state
 
-    def update(self,screen,resourcelist,structurelist,offset,internal_offset,zoom_scale):
+    def update(self,screen,resourcelist,structurelist,cameralist,offset,internal_offset,zoom_scale,colliders):
         self.draw_active_cell(screen,offset,internal_offset,zoom_scale)
         self.draw_path(screen,offset,internal_offset,zoom_scale)
+        self.baseputcol(structurelist,cameralist,colliders)
+        self.resourcecollectcol(resourcelist,cameralist,colliders)
         self.character.update(screen)
-        self.resourcecollectcol(resourcelist)
-        self.baseputcol(structurelist)
+
         #self.character.draw(screen)
         #print(f"Updated rect: {self.rect.center}, Position: {self.pos}")
 
 class Resource(Pathfinder):
     def __init__(self,name,Owner,Map,screen,x,y,resources,zoom_scale):
         super().__init__(name,Owner,0,0,0,0,Map,screen,x,y,zoom_scale)
-        for character in self.character:
-            character.image = pygame.image.load('assets/resourcestandin.png').convert_alpha()
-            character.rect =  character.image.get_rect(center = (x,y))
-            character.pos = character.rect.center
+        setup.spriteSet(self, 'assets/resourcestandin.png', x, y)
         self.resources = resources
 
 class Base(Structure):
     def __init__(self,name,Owner,HP,Energy,Range,Map,screen,x,y,workerlist,zoom_scale):
         super().__init__(name,Owner,HP,Energy,Range,Map,screen,x,y,0,zoom_scale)
-        for character in self.character:
-            character.image = pygame.image.load('assets/structurestandin.png').convert_alpha()
-            character.rect =  character.image.get_rect(center = (x,y))
-            character.pos = character.rect.center
+        setup.spriteSet(self, 'assets/structurestandin.png',x,y)
         self.wlist = workerlist
         self.resource = 0
         self.queue = [0,0,0,0,0]
@@ -513,21 +640,8 @@ class Base(Structure):
     def createunit(self,Map,screen,zoom_scale):
         #placeholder build timer
         unitTime = 5
-        if self.queue[0] >= unitTime:
-            Queue = self.queue
-            newqueue = [0,0,0,0,0]
-            newflag = [0,0,0,0,0]
-            for slot in Queue:
-                num = Queue.index(slot) + 1
-                newqueue[Queue.index(slot)] = Queue[num]
-            Queue = newqueue
-            for slot in self.proflag:
-                num = self.proflag.index(slot) + 1
-                newflag[self.proflag.index(slot)] = self.proflag[num]
-            self.proflag = newflag
-            Queue[4] = 0
-            self.queue = newqueue
-            Man = Worker("man1","Me",100,100,0,2,Map,screen,300,300,zoom_scale)
-            for character in self.character:
-                character.image = pygame.image.load('assets/structurestandin.png').convert_alpha()
-            self.wlist.add(Man)
+        for character in self.character:
+            if pro.produce(self,unitTime):
+                Man = Worker("man1",self.Owner,100,100,0,2,Map,screen,character.pos.x + 50,character.pos.y + 50,zoom_scale)
+                setup.spriteSetUpdate(self, 'assets/structurestandin.png')
+                self.wlist.add(Man)

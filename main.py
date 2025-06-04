@@ -8,6 +8,7 @@ import math
 
 import classes as Class
 import mouseStuff as mouse
+import event as eventH
 
 
 pygame.init()
@@ -17,6 +18,8 @@ pygame.event.set_grab(True)
 running = True
 dt = 0
 clicking = False
+attacking = False
+confirm = False
 #Map
 #bg_surf = pygame.transform.scale(pygame.image.load('assets/backgroundstandin.png').convert(),(1280,720))
 Map = [[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
@@ -92,21 +95,16 @@ while running:
             cameralist.zoom_scale += event.y * 0.03
         if event.type == pygame.MOUSEBUTTONDOWN:
             #all mouse inputs
-            if event.button == 3:  
-                for units in unitlist:
-                    if units.selected:
-                        if units.Owner == "Me":
-                            units.create_path(offset,internal_offset,cameralist.zoom_scale)
-                for structures in structurelist:
-                    if structures.selected:
-                        if structures.Owner == "Me":
-                            structures.create_path(offset,internal_offset,cameralist.zoom_scale)
-                for worker in workerlist:
-                    if worker.selected:
-                        if worker.Owner == "Me":
-                            worker.create_path(offset,internal_offset,cameralist.zoom_scale)
+            if event.button == 3:
+                if attacking is True:
+                    eventH.attackHandler(cameralist.zoom_scale,structurelist, unitlist, resourcelist, workerlist,offset,internal_offset,screen)
+                eventH.createpathHandler(offset,internal_offset,cameralist.zoom_scale,structurelist, unitlist, resourcelist, workerlist)
+
+                
         if event.type == pygame.KEYDOWN:
             #all keyboard inputs
+            if event.key == pygame.K_a:
+                attacking = True
             #queue
             if event.key == pygame.K_b:
                 for structures in structurelist:
@@ -118,6 +116,11 @@ while running:
                     if structures.selected:
                         if structures.Owner == "Me":
                             structures.stopqueue()
+
+        if event.type == pygame.KEYUP:
+            if event.key == pygame.K_a:
+                attacking = False
+        
 
     # fill the screen with a color to wipe away anything from last frame
     #screen.blit(bg_surf,(0,0))

@@ -7,6 +7,7 @@ from pathfinding.core.diagonal_movement import DiagonalMovement
 
 import unitsetup as setup
 import production as pro
+import testdraw as test
 
 class Object(pygame.sprite.Sprite):
     def __init__(self,name,Owner,HP,Energy,Range,Speed,empty_path,x,y):
@@ -477,31 +478,36 @@ class Pathfinder(Object):
         # If no free grid found, do nothing
         return False
 
-    def attack(self,search_radius=self.Range,grid_size, zoom_scale,colliders):
+    def attack(self, zoom_scale, colliders,offset, internal_offset,screen):
         for character in self.character:
             current_grid_x = int(character.pos.x)
             current_grid_y = int(character.pos.y)
-            scalefactor = 32 * zoom_scale
-            search_radius = search_radius * scale_factor
+            scale_factor = 32 * zoom_scale
+            search_radius = self.Range * scale_factor
             candidate_centers = []
 
             # change this to find nearest enemy in range centre  
-            for collidergroup in colliders
-                for collide in collidergroup
+            for collidergroup in colliders:
+                for collide in collidergroup:
                     for character in collide.character:
                         center = character.pos
                         dist = (center - character.pos).length()
                         if dist <= search_radius: #make sure to scale to zoom factor
-                            candidate_centers.append((dist, center))
+                            if character.Owner != self.Owner: #need to do this for other functions that are similar
+                                candidate_centers.append(character)
 
             # Sort by distance to current position
-            candidate_centers.sort(key=lambda tup: tup[0])
+            candidate_centers.sort(reverse=True,key=lambda c: (c.pos - character.pos).length())
+
+
+            x,y=test.testdraw(self, zoom_scale, offset, internal_offset, screen)
+            pygame.draw.circle(screen, (255, 0, 0), (x, y), int(search_radius), 10)
 
             if candidate_centers is not None:
                 #put in a way to stop the unit when they are attacking
-                candidate_centers[0].HP -= 5
-                print(f"{candidate_centers[0].name} is down to {candidate_centers[0].HP} HP")
-
+                if candidate_centers[0] != character:
+                    candidate_centers[0].HP -= 5
+                    print(f"{candidate_centers[0].name} is down to {candidate_centers[0].HP} HP")
 
     def update(self,screen,offset,internal_offset,zoom_scale,cameralist, colliders):
         self.draw_active_cell(screen,offset,internal_offset,zoom_scale)

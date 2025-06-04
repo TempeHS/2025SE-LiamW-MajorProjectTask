@@ -497,8 +497,10 @@ class Pathfinder(Object):
             # Sort by distance to current position
             candidate_centers.sort(key=lambda tup: tup[0])
 
-            candidate_centers[0].HP -= 5
-            print(f"{candidate_centers[0].name} is down to {candidate_centers[0].HP} HP")
+            if candidate_centers is not None:
+                #put in a way to stop the unit when they are attacking
+                candidate_centers[0].HP -= 5
+                print(f"{candidate_centers[0].name} is down to {candidate_centers[0].HP} HP")
 
 
     def update(self,screen,offset,internal_offset,zoom_scale,cameralist, colliders):

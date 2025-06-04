@@ -65,10 +65,12 @@ Structure = Class.Structure("structure","Me",100,100,0,Map,screen,450,450, unitl
 Unit = Class.Unit("unit","Me",100,100,0,2,Map,screen,360,360, cameralist.zoom_scale)
 Resource = Class.Resource("resource","Me",Map,screen,100,100,10, cameralist.zoom_scale)
 Worker = Class.Worker("worker","Me",100,100,0,2,Map,screen,200,200, cameralist.zoom_scale)
+Enemy = Class.Unit("unit","Enemy",100,100,0,2,Map,screen,360,360, cameralist.zoom_scale)
 structurelist.add(Base,Structure)
 unitlist.add(Unit)
 resourcelist.add(Resource)
 workerlist.add(Worker)
+unitlist.add(Enemy)
 cameralist.add(structurelist,unitlist,resourcelist,workerlist)
 mouse = mouse.Mouse()
 
@@ -93,13 +95,16 @@ while running:
             if event.button == 3:  
                 for units in unitlist:
                     if units.selected:
-                        units.create_path(offset,internal_offset,cameralist.zoom_scale)
+                        if units.Owner:
+                            units.create_path(offset,internal_offset,cameralist.zoom_scale)
                 for structures in structurelist:
                     if structures.selected:
-                        structures.create_path(offset,internal_offset,cameralist.zoom_scale)
+                        if structures.Owner:
+                            structures.create_path(offset,internal_offset,cameralist.zoom_scale)
                 for worker in workerlist:
                     if worker.selected:
-                        worker.create_path(offset,internal_offset,cameralist.zoom_scale)
+                        if worker.Owner:
+                            worker.create_path(offset,internal_offset,cameralist.zoom_scale)
         if event.type == pygame.KEYDOWN:
             #all keyboard inputs
             #queue

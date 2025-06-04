@@ -521,11 +521,12 @@ class Structure(Pathfinder):
             n -= 1
     def createunit(self,Map,screen,zoom_scale):
         #placeholder build timer
-        unitTime = 8
-        if pro.produce(self,unitTime):
-            Man = Unit("man","Me",100,100,0,2,Map,screen,600,600,zoom_scale)
-            setup.spriteSetUpdate(self, 'assets/structurestandin.png')
-            self.ulist.add(Man)
+        for character in self.character:
+            unitTime = 8
+            if pro.produce(self,unitTime):
+                Man = Unit("man",self.Owner,100,100,0,2,Map,screen,character.pos.x + 50,character.pos.y + 50,zoom_scale)
+                setup.spriteSetUpdate(self, 'assets/structurestandin.png')
+                self.ulist.add(Man)
 
 
     def update(self,screen,time,Map,offset,internal_offset,zoom_scale,cameralist,colliders):
@@ -639,7 +640,8 @@ class Base(Structure):
     def createunit(self,Map,screen,zoom_scale):
         #placeholder build timer
         unitTime = 5
-        if pro.produce(self,unitTime):
-            Man = Worker("man1","Me",100,100,0,2,Map,screen,300,300,zoom_scale)
-            setup.spriteSetUpdate(self, 'assets/structurestandin.png')
-            self.wlist.add(Man)
+        for character in self.character:
+            if pro.produce(self,unitTime):
+                Man = Worker("man1",self.Owner,100,100,0,2,Map,screen,character.pos.x + 50,character.pos.y + 50,zoom_scale)
+                setup.spriteSetUpdate(self, 'assets/structurestandin.png')
+                self.wlist.add(Man)

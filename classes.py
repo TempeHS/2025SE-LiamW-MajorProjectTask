@@ -568,6 +568,7 @@ class Structure(Pathfinder):
                 Man = Unit("man",self.Owner,100,100,0,2,Map,screen,character.pos.x + 50,character.pos.y + 50,zoom_scale)
                 setup.spriteSetUpdate(self, 'assets/structurestandin.png')
                 self.ulist.add(Man)
+                setup.spriteInheritpath(self,Man)
 
 
     def update(self,screen,time,Map,offset,internal_offset,zoom_scale,cameralist,colliders):
@@ -688,3 +689,4 @@ class Base(Structure):
                 Man = Worker("man1",self.Owner,100,100,0,2,Map,screen,character.pos.x + 50,character.pos.y + 50,zoom_scale)
                 setup.spriteSetUpdate(self, 'assets/structurestandin.png')
                 self.wlist.add(Man)
+                setup.spriteInheritpath(self,Man)

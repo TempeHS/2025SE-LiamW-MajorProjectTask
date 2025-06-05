@@ -27,3 +27,8 @@ def spriteSetUpdate(self,Image):
         bounding_rect = image.get_bounding_rect()
         cropped_image = image.subsurface(bounding_rect).copy()
         character.image = cropped_image
+
+def spriteInheritpath(self, product):
+    product.path = self.path[:]  # Copy the path
+    for character in product.character:
+        character.set_path(product.path)  # Set path for internal Object

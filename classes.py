@@ -80,6 +80,7 @@ class Object(pygame.sprite.Sprite):
         self.check_collisions()
         self.rect.center = self.pos
 
+
 class CameraGroup(pygame.sprite.Group):
     def __init__(self,Map):
         super().__init__()
@@ -494,7 +495,7 @@ class Pathfinder(Object):
                         search_radius = collide.Range * scale_factor
                         if dist < search_radius: #make sure to scale to zoom factor
                             if collide.Owner != self.Owner: #need to do this for other functions that are similar
-                                candidate_centers.append(character3)
+                                candidate_centers.append(collide)
 
             # Sort by distance to current position
             candidate_centers.sort(reverse=True,key=lambda c: (c.pos - character2.pos).length())
@@ -503,10 +504,21 @@ class Pathfinder(Object):
             if candidate_centers:
                 #put in a way to stop the unit when they are attacking
                 if candidate_centers[0] != character2:
+                    character2.path = []
+                    character2.collision_rects = []
+                    character2.get_direction()
                     candidate_centers[0].HP -= 5
+                    
                     print(f"{candidate_centers[0].name} is down to {candidate_centers[0].HP} HP")
 
+    def death(self):
+        if self.name != "resource":
+            if self.HP <= 0:
+                print(f"{self.name} has died.")
+                self.kill()
+
     def update(self,screen,offset,internal_offset,zoom_scale,cameralist, colliders):
+        self.death()
         self.draw_active_cell(screen,offset,internal_offset,zoom_scale)
         self.draw_path(screen,offset,internal_offset,zoom_scale)
         self.collision(cameralist,colliders)
@@ -559,6 +571,7 @@ class Structure(Pathfinder):
 
 
     def update(self,screen,time,Map,offset,internal_offset,zoom_scale,cameralist,colliders):
+        self.death()
         self.draw_active_cell(screen,offset,internal_offset,zoom_scale)
         self.draw_path(screen,offset,internal_offset,zoom_scale)
         self.collision(cameralist,colliders)
@@ -642,6 +655,7 @@ class Worker(Unit):
             # You can also remove the resource from the game or update its state
 
     def update(self,screen,resourcelist,structurelist,cameralist,offset,internal_offset,zoom_scale,colliders):
+        self.death()
         self.draw_active_cell(screen,offset,internal_offset,zoom_scale)
         self.draw_path(screen,offset,internal_offset,zoom_scale)
         self.baseputcol(structurelist,cameralist,colliders)

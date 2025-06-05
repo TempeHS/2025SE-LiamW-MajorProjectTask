@@ -99,10 +99,10 @@ while running:
         if event.type == pygame.MOUSEBUTTONDOWN:
             #all mouse inputs
             if event.button == 3:
+                eventH.createpathHandler(offset,internal_offset,cameralist.zoom_scale,structurelist, unitlist, resourcelist, workerlist)
                 if attacking is True:
                     eventH.attackHandler(cameralist.zoom_scale,structurelist, unitlist, resourcelist, workerlist,offset,internal_offset,screen)
                     testdraw = True
-                eventH.createpathHandler(offset,internal_offset,cameralist.zoom_scale,structurelist, unitlist, resourcelist, workerlist)
 
                 
         if event.type == pygame.KEYDOWN:

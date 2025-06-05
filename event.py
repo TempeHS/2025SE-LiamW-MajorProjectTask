@@ -37,3 +37,4 @@ def attackHandler(zoom_scale, structurelist, unitlist, resourcelist, workerlist,
         if worker.selected:
             if worker.Owner == "Me":
                 worker.attack(zoom_scale,[structurelist, unitlist, resourcelist, workerlist],offset, internal_offset, screen)
+

@@ -479,33 +479,30 @@ class Pathfinder(Object):
         return False
 
     def attack(self, zoom_scale, colliders,offset, internal_offset,screen):
-        for character in self.character:
-            current_grid_x = int(character.pos.x)
-            current_grid_y = int(character.pos.y)
+        for character2 in self.character:
+            current_grid_x = int(character2.pos.x)
+            current_grid_y = int(character2.pos.y)
             scale_factor = 32 * zoom_scale
-            search_radius = self.Range * scale_factor
             candidate_centers = []
 
             # change this to find nearest enemy in range centre  
             for collidergroup in colliders:
                 for collide in collidergroup:
-                    for character in collide.character:
-                        center = character.pos
-                        dist = (center - character.pos).length()
-                        if dist <= search_radius: #make sure to scale to zoom factor
-                            if character.Owner != self.Owner: #need to do this for other functions that are similar
-                                candidate_centers.append(character)
+                    for character3 in collide.character:
+                        center = character3.pos
+                        dist = (center - character2.pos).length()
+                        search_radius = collide.Range * scale_factor
+                        if dist < search_radius: #make sure to scale to zoom factor
+                            if collide.Owner != self.Owner: #need to do this for other functions that are similar
+                                candidate_centers.append(character3)
 
             # Sort by distance to current position
-            candidate_centers.sort(reverse=True,key=lambda c: (c.pos - character.pos).length())
+            candidate_centers.sort(reverse=True,key=lambda c: (c.pos - character2.pos).length())
 
 
-            x,y=test.testdraw(self, zoom_scale, offset, internal_offset, screen)
-            pygame.draw.circle(screen, (255, 0, 0), (x, y), int(search_radius), 10)
-
-            if candidate_centers is not None:
+            if candidate_centers:
                 #put in a way to stop the unit when they are attacking
-                if candidate_centers[0] != character:
+                if candidate_centers[0] != character2:
                     candidate_centers[0].HP -= 5
                     print(f"{candidate_centers[0].name} is down to {candidate_centers[0].HP} HP")
 

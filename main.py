@@ -9,6 +9,7 @@ import math
 import classes as Class
 import mouseStuff as mouse
 import event as eventH
+import testdraw as test
 
 
 pygame.init()
@@ -20,6 +21,8 @@ dt = 0
 clicking = False
 attacking = False
 confirm = False
+testdraw = False
+candidates = []
 #Map
 #bg_surf = pygame.transform.scale(pygame.image.load('assets/backgroundstandin.png').convert(),(1280,720))
 Map = [[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
@@ -65,10 +68,10 @@ resourcelist = Class.CameraGroup(Map)
 workerlist = Class.CameraGroup(Map)
 Base = Class.Base("base","Me",100,100,0,Map,screen,300,300,workerlist,cameralist.zoom_scale)
 Structure = Class.Structure("structure","Me",100,100,0,Map,screen,450,450, unitlist, cameralist.zoom_scale)
-Unit = Class.Unit("unit","Me",100,100,0,2,Map,screen,360,360, cameralist.zoom_scale)
+Unit = Class.Unit("unit","Me",100,100,5,2,Map,screen,360,360, cameralist.zoom_scale)
 Resource = Class.Resource("resource","Me",Map,screen,100,100,10, cameralist.zoom_scale)
-Worker = Class.Worker("worker","Me",100,100,0,2,Map,screen,200,200, cameralist.zoom_scale)
-Enemy = Class.Unit("unitE","Enemy",100,100,0,2,Map,screen,600,600, cameralist.zoom_scale)
+Worker = Class.Worker("worker","Me",100,100,5,2,Map,screen,200,200, cameralist.zoom_scale)
+Enemy = Class.Unit("unitE","Enemy",100,100,5,2,Map,screen,600,600, cameralist.zoom_scale)
 structurelist.add(Base,Structure)
 unitlist.add(Unit)
 resourcelist.add(Resource)
@@ -98,6 +101,7 @@ while running:
             if event.button == 3:
                 if attacking is True:
                     eventH.attackHandler(cameralist.zoom_scale,structurelist, unitlist, resourcelist, workerlist,offset,internal_offset,screen)
+                    testdraw = True
                 eventH.createpathHandler(offset,internal_offset,cameralist.zoom_scale,structurelist, unitlist, resourcelist, workerlist)
 
                 
@@ -144,7 +148,6 @@ while running:
                 cameralist.add(unit)
     
     mouse.selection(screen,[structurelist, unitlist, resourcelist, workerlist],offset, internal_offset, cameralist.zoom_scale,cameralist)
-
     pygame.display.update()
     # limits FPS to 60
     # dt is delta time in seconds since last frame, used for framerate-

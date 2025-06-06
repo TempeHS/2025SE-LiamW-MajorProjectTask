@@ -565,7 +565,7 @@ class Structure(Pathfinder):
         for character in self.character:
             unitTime = 8
             if pro.produce(self,unitTime):
-                Man = Unit("man",self.Owner,100,100,0,2,Map,screen,character.pos.x + 50,character.pos.y + 50,zoom_scale)
+                Man = Unit("man",self.Owner,100,100,0,2,Map,screen,self.path[1].x *32 *zoom_scale ,self.path[1].y *32 *zoom_scale,zoom_scale)
                 setup.spriteSetUpdate(self, 'assets/structurestandin.png')
                 self.ulist.add(Man)
                 setup.spriteInheritpath(self,Man)
@@ -686,7 +686,7 @@ class Base(Structure):
         unitTime = 5
         for character in self.character:
             if pro.produce(self,unitTime):
-                Man = Worker("man1",self.Owner,100,100,0,2,Map,screen,character.pos.x + 50,character.pos.y + 50,zoom_scale)
+                Man = Worker("man1",self.Owner,100,100,0,2,Map,screen,character.pos.x,character.pos.y,zoom_scale)
                 setup.spriteSetUpdate(self, 'assets/structurestandin.png')
                 self.wlist.add(Man)
                 setup.spriteInheritpath(self,Man)

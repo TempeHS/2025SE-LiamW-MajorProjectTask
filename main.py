@@ -13,9 +13,9 @@ import testdraw as test
 
 
 pygame.init()
-screen = pygame.display.set_mode((1280, 720))
+screen = pygame.display.set_mode((1920,1080))
 clock = pygame.time.Clock()
-pygame.event.set_grab(True) 
+pygame.event.set_grab(True)
 running = True
 dt = 0
 clicking = False

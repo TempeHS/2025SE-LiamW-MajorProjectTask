@@ -227,8 +227,11 @@ class CameraGroup(pygame.sprite.Group):
         # Draw in order
         for character in all_characters:
             offset_pos = character.rect.topleft + self.offset - self.internal_offset
-            pygame.draw.rect(self.internal_surf, (255, 0, 0), character.rect.move(self.offset - self.internal_offset), 2)
             self.internal_surf.blit(character.image, offset_pos)
+            if character.selected:
+                pygame.draw.rect(self.internal_surf, (0, 255, 0), character.rect.move(self.offset - self.internal_offset), 2)
+            else:
+                pygame.draw.rect(self.internal_surf, (255, 0, 0), character.rect.move(self.offset - self.internal_offset), 2)
         
         #add if statement to limit size
         scaled_surf = pygame.transform.scale(self.internal_surf, self.internal_surf_size_vector * self.zoom_scale)

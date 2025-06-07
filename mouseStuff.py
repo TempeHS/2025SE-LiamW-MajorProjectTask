@@ -37,10 +37,14 @@ class Mouse():
                     if selrect.colliderect(char_rect):
                         print(f"Collision with {character.name}")
                         collider.selected = True
+                        for character in collider.character:
+                            character.selected = True
                         gonelist.remove(collider)
 
         for goner in gonelist:
             goner.selected = False
+            for character in goner.character:
+                character.selected = False
 
 
     def selection(self, screen,colliders, offset, internal_offset, zoom_scale, cameralist):

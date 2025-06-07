@@ -338,26 +338,27 @@ class Pathfinder(Object):
         self.character.sprite.set_path(self.path)
 
     def draw_path(self, screen, offset, internal_offset, zoom_scale):
-        if self.path:
-            cell_size = 32 * zoom_scale
-            display_size = pygame.display.get_surface().get_size()
-            internal_surf_size = screen.get_size()
-            scaled_size = (internal_surf_size[0] * zoom_scale, internal_surf_size[1] * zoom_scale)
-            offset_x = (display_size[0] - scaled_size[0]) // 2
-            offset_y = (display_size[1] - scaled_size[1]) // 2
+        if self.selected:
+            if self.path:
+                cell_size = 32 * zoom_scale
+                display_size = pygame.display.get_surface().get_size()
+                internal_surf_size = screen.get_size()
+                scaled_size = (internal_surf_size[0] * zoom_scale, internal_surf_size[1] * zoom_scale)
+                offset_x = (display_size[0] - scaled_size[0]) // 2
+                offset_y = (display_size[1] - scaled_size[1]) // 2
 
-            points = []
-            for point in self.path:
-                point = self.gridIntoInt(point)
-                x = (point[0] * 32 + offset.x - internal_offset.x) * zoom_scale + offset_x + cell_size - (internal_offset.x + 16)* zoom_scale
-                y = (point[1] * 32 + offset.y - internal_offset.y) * zoom_scale + offset_y + cell_size - (internal_offset.y + 16)* zoom_scale
-                points.append((x, y))
-                pygame.draw.circle(screen, '#4a4a4a', (int(x), int(y)), max(2, int(2 * zoom_scale)))
-            if len(points) > 1:
-                pygame.draw.lines(screen, '#4a4a4a', False, points, max(1, int(5 * zoom_scale)))
-                tempx, tempy = points[-1]
-                scaled_point = pygame.transform.scale(self.select_point, (int(cell_size), int(cell_size)))
-                screen.blit(scaled_point, (tempx - cell_size / 2, tempy - cell_size / 2))
+                points = []
+                for point in self.path:
+                    point = self.gridIntoInt(point)
+                    x = (point[0] * 32 + offset.x - internal_offset.x) * zoom_scale + offset_x + cell_size - (internal_offset.x + 16)* zoom_scale
+                    y = (point[1] * 32 + offset.y - internal_offset.y) * zoom_scale + offset_y + cell_size - (internal_offset.y + 16)* zoom_scale
+                    points.append((x, y))
+                    pygame.draw.circle(screen, '#4a4a4a', (int(x), int(y)), max(2, int(2 * zoom_scale)))
+                if len(points) > 1:
+                    pygame.draw.lines(screen, '#4a4a4a', False, points, max(1, int(5 * zoom_scale)))
+                    tempx, tempy = points[-1]
+                    scaled_point = pygame.transform.scale(self.select_point, (int(cell_size), int(cell_size)))
+                    screen.blit(scaled_point, (tempx - cell_size / 2, tempy - cell_size / 2))
 
     def collision(self, cameralist, colliders):
         for character in self.character:

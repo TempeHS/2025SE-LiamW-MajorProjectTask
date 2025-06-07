@@ -8,6 +8,7 @@ from pathfinding.core.diagonal_movement import DiagonalMovement
 import unitsetup as setup
 import production as pro
 import testdraw as test
+import autopath as path
 
 class Object(pygame.sprite.Sprite):
     def __init__(self,name,Owner,HP,Energy,Range,Speed,empty_path,x,y):
@@ -594,10 +595,11 @@ class Worker(Unit):
         super().__init__(name,Owner,HP,Energy,Range,Speed,Map,screen,x,y,zoom_scale)
         setup.spriteSet(self, 'assets/workerstandin.png', x, y)
         self.Speed = 1.5  # Workers are slower than units
+        self.mined_from = None
         self.mining_progress = 0
         self.has_mined = False
     
-    def resourcecollectcol(self,resourcelist,cameralist,colliders):
+    def resourcecollectcol(self,resourcelist,cameralist,colliders,zoom_scale):
         Rcollision = False
         if not self.has_mined:
             for resource in resourcelist:
@@ -609,7 +611,9 @@ class Worker(Unit):
                             print("Collision with resource!")
                             #need to rework logic for later to be if the user clicks on the resource then they stop at the resource which will stop locking the worker class to the resource
                             character.direction = pygame.math.Vector2(0,0)
-                            self.mining()
+                            self.mining(rcharacter)
+                            if self.has_mined:
+                                path.ResourcePath(self,colliders[0],zoom_scale,resourcelist)
                             break
                     else:
                         self.mining_progress = 0
@@ -617,7 +621,7 @@ class Worker(Unit):
         if not Rcollision:
             self.collision(cameralist,colliders)
 
-    def baseputcol(self,structurelist,cameralist,colliders):
+    def baseputcol(self,structurelist,cameralist,colliders,zoom_scale):
         if self.has_mined:
             for structure in structurelist:
                 #print(f"Worker rect: {self.rect}, Resource rect: {resource.rect}")
@@ -627,6 +631,8 @@ class Worker(Unit):
                             print("Collision with base!")
                             character.direction = pygame.math.Vector2(0,0)
                             self.putting()
+                            if not self.has_mined:
+                                path.ResourcePath2(self,colliders[0],zoom_scale,structurelist)
                             structure.resource += 5
                             print(structure.resource)
                             #add updating resource counter in base here
@@ -645,7 +651,7 @@ class Worker(Unit):
             setup.spriteSetUpdate(self, 'assets/workerstandin.png')
         self.has_mined = False
 
-    def mining(self):
+    def mining(self,resource):
         self.mining_progress += 1
         if self.mining_progress == 600:
             # Handle resource collection here
@@ -653,14 +659,15 @@ class Worker(Unit):
             self.mining_progress = 0
             setup.spriteSetUpdate(self, 'assets/workerwithRstandin.png')
             self.has_mined = True
+            self.mined_from = resource
             # You can also remove the resource from the game or update its state
 
     def update(self,screen,resourcelist,structurelist,cameralist,offset,internal_offset,zoom_scale,colliders):
         self.death()
         self.draw_active_cell(screen,offset,internal_offset,zoom_scale)
         self.draw_path(screen,offset,internal_offset,zoom_scale)
-        self.baseputcol(structurelist,cameralist,colliders)
-        self.resourcecollectcol(resourcelist,cameralist,colliders)
+        self.baseputcol(structurelist,cameralist,colliders,zoom_scale)
+        self.resourcecollectcol(resourcelist,cameralist,colliders,zoom_scale)
         self.character.update(screen)
 
         #self.character.draw(screen)

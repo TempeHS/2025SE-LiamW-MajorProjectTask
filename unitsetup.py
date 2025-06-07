@@ -55,3 +55,27 @@ def spriteInheritpath(self, product):
     # Set the filtered path for the internal Object
     for character in product.character:
         character.set_path(product.path)
+
+def spriteResourcepath(self, resourcelist):
+    # Collect all resource rects from all resources in the list
+    resource_rects = []
+    for resource in resourcelist:
+        for character in resource.character:
+            resource_rects.append(character.rect)
+
+    # Filter out path points that would collide with any resource rect
+    filtered_path = []
+    for point in self.path:
+        x = point.x * 32 + 16
+        y = point.y * 32 + 16
+        point_rect = pygame.Rect(x - 2, y - 2, 4, 4)
+        if not any(point_rect.colliderect(srect) for srect in resource_rects):
+            filtered_path.append(point)
+
+    if filtered_path:
+        filtered_path = filtered_path[1:]
+
+    self.path = filtered_path
+
+    for character in self.character:
+        character.set_path(self.path)

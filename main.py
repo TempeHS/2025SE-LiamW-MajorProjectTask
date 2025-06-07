@@ -10,6 +10,7 @@ import classes as Class
 import mouseStuff as mouse
 import event as eventH
 import testdraw as test
+import UI
 
 
 pygame.init()
@@ -79,6 +80,7 @@ workerlist.add(Worker)
 unitlist.add(Enemy)
 cameralist.add(structurelist,unitlist,resourcelist,workerlist)
 mouse = mouse.Mouse()
+UI = UI.UI()
 
 player_pos = pygame.Vector2(screen.get_width() / 2, screen.get_height() / 2)
 offset = cameralist.offset
@@ -147,6 +149,7 @@ while running:
                 unitlist.add(unit)
                 cameralist.add(unit)
     
+    UI.UIdraw(screen)
     mouse.selection(screen,[structurelist, unitlist, resourcelist, workerlist],offset, internal_offset, cameralist.zoom_scale,cameralist)
     pygame.display.update()
     # limits FPS to 60

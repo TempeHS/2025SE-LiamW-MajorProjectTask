@@ -149,7 +149,7 @@ while running:
                 unitlist.add(unit)
                 cameralist.add(unit)
     
-    UI.UIdraw(screen)
+    UI.UIdraw(screen,colliders=[structurelist, unitlist, resourcelist, workerlist])
     mouse.selection(screen,[structurelist, unitlist, resourcelist, workerlist],offset, internal_offset, cameralist.zoom_scale,cameralist)
     pygame.display.update()
     # limits FPS to 60

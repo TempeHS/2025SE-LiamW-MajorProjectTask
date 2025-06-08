@@ -17,6 +17,17 @@ class UI():
         self.CommandUIborder = pygame.transform.scale(CommandUIborder, (80,80))
 
 
-    def UIdraw(self,screen):
+    def UIdraw(self,screen,colliders):
         screen.blit(self.UIbotBackground, (0, 0))
-        screen.blit(self.CommandUIborder, (1465, 775))
+        i = 0
+        for collidergroup in colliders:
+            for collider in collidergroup:
+                if collider.selected:
+                    for character in collider.character:
+                        UI_image = pygame.transform.scale(character.image, (40,40))
+                        UI_border = pygame.transform.scale(self.CommandUIborder, (50,50))
+                        screen.blit(UI_image, (500 + i,875))
+                        screen.blit(UI_border, (495 + i, 870))
+                        
+                        screen.blit(self.CommandUIborder, (1465, 775))
+                        i += 50

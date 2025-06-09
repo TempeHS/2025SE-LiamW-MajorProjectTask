@@ -13,13 +13,14 @@
 11. enemy interaction (attacking)
 12. Autopathing (workers and structures)
 13. UI overlay
-14. create map sprite
+14. create map sprite + mini map
 15. change hitboxes to be inside sprites
 16. worker spread out command
-17. create basic AI (hard coded)
-18. create sprites
-19. Elevation mechanics (flying units and terrain)
-20. Implement other camera control options
-21. create three different factions for the game (classes again)
-22. make UI 
-23. try ML a proper AI
+17. command UI
+18. create basic AI (hard coded)
+19. create sprites
+20. Elevation mechanics (flying units and terrain)
+21. Implement other camera control options
+22. create three different factions for the game (classes again)
+23. make UI 
+24. try ML a proper AI

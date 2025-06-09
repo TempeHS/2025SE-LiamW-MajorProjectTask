@@ -232,12 +232,21 @@ class CameraGroup(pygame.sprite.Group):
                 pygame.draw.rect(self.internal_surf, (0, 255, 0), character.rect.move(self.offset - self.internal_offset), 2)
             else:
                 pygame.draw.rect(self.internal_surf, (255, 0, 0), character.rect.move(self.offset - self.internal_offset), 2)
+            
+            #HP bar
+            HPbar = pygame.image.load("assets/UI/health bar Segment.png").convert_alpha
+            cropped_image = HPbar.subsurface(((0 +80 , 0, 80, 80)), (50, 50)).copy()
+            HPrender = cropped_image
+            self.internal_surf.blit(HPrender, offset_pos)
         
         #add if statement to limit size
         scaled_surf = pygame.transform.scale(self.internal_surf, self.internal_surf_size_vector * self.zoom_scale)
         scaled_rect = scaled_surf.get_rect(center=(self.half_width, self.half_height))
         self.display_surface.blit(scaled_surf, scaled_rect)
         pygame.draw.rect(self.display_surface, (0, 255, 0), self.camera_rect, 5)
+        
+
+
 
 class Pathfinder(Object):
     def __init__ (self,name,Owner,HP,Energy,Range,Speed,Map,screen,x,y,zoom_scale):

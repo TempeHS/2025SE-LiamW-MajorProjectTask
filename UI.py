@@ -23,7 +23,7 @@ class UI():
             self.number.append(number)
 
         self.totaltime = 0
-
+        self.totalunits = 0
 
     def UIdraw(self,screen,colliders,dt):
         unitselect = False
@@ -88,7 +88,8 @@ class UI():
                 digit_index = int(digit)
                 number = pygame.transform.scale(self.number[digit_index], (25, 25))
                 screen.blit(number, (1760 + i * 10, 20))
-
+        
+        self.totalunits = unitcount
 
 
         # selection interaction

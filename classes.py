@@ -368,7 +368,7 @@ class Pathfinder(Object):
             collided = False
             grid_size = 32
             for cam in cameralist:
-                if character.name is not cam.name:
+                if self is not cam:
                     for character2 in cam.character:
                         if character.rect.colliderect(character2.rect):
                             collided = True

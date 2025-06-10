@@ -16,6 +16,7 @@ class Object(pygame.sprite.Sprite):
         self.name = name
         self.Owner = Owner
         self.HP = HP
+        self.MaxHP = HP
         self.Energy = Energy
         self.Range = Range
         self.Speed = Speed #you need to set it 
@@ -234,17 +235,30 @@ class CameraGroup(pygame.sprite.Group):
                 pygame.draw.rect(self.internal_surf, (255, 0, 0), character.rect.move(self.offset - self.internal_offset), 2)
             
             #HP bar
-            HPbar = pygame.image.load("assets/UI/health bar Segment.png").convert_alpha
-            cropped_image = HPbar.subsurface(((0 +80 , 0, 80, 80)), (50, 50)).copy()
-            HPrender = cropped_image
-            self.internal_surf.blit(HPrender, offset_pos)
+            
+            HPbar = pygame.image.load("assets/UI/health bar Segment.png").convert_alpha()
+            HPlength = 100
+            HPwidth = 50
+            HPbar = pygame.transform.scale(HPbar, (HPlength, HPwidth))
+            center_offset = offset_pos + (0,-50) - pygame.Vector2(HPlength,0) / 2 + (character.rect.width / 2,0)
+            self.internal_surf.blit(HPbar, center_offset)
+            for i in range(character.MaxHP // 100):
+                division = HPlength/ ((character.MaxHP)/100)
+                HPsegment = pygame.transform.scale(HPbar, ((division),HPwidth))
+                self.internal_surf.blit(HPsegment, (center_offset + (i* division,0)))
+            for i in range(character.MaxHP // 100):
+                division_width =  division
+                x = center_offset.x + i * division_width
+                y = center_offset.y
+                rect = pygame.Rect(x+1, y+18, division_width - 1, HPwidth/5)
+                pygame.draw.rect(self.internal_surf, (0,255,0), rect)
+            
         
         #add if statement to limit size
         scaled_surf = pygame.transform.scale(self.internal_surf, self.internal_surf_size_vector * self.zoom_scale)
         scaled_rect = scaled_surf.get_rect(center=(self.half_width, self.half_height))
         self.display_surface.blit(scaled_surf, scaled_rect)
         pygame.draw.rect(self.display_surface, (0, 255, 0), self.camera_rect, 5)
-        
 
 
 
@@ -495,8 +509,6 @@ class Pathfinder(Object):
 
     def attack(self, zoom_scale, colliders,offset, internal_offset,screen):
         for character2 in self.character:
-            current_grid_x = int(character2.pos.x)
-            current_grid_y = int(character2.pos.y)
             scale_factor = 32 * zoom_scale
             candidate_centers = []
 
@@ -521,7 +533,7 @@ class Pathfinder(Object):
                     character2.path = []
                     character2.collision_rects = []
                     character2.get_direction()
-                    candidate_centers[0].HP -= 5
+                    candidate_centers[0].HP -= 20
                     
                     print(f"{candidate_centers[0].name} is down to {candidate_centers[0].HP} HP")
 

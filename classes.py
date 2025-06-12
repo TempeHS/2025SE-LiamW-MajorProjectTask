@@ -9,6 +9,7 @@ import unitsetup as setup
 import production as pro
 import testdraw as test
 import autopath as path
+import unitTypeClassIndex as translator
 
 class Object(pygame.sprite.Sprite):
     def __init__(self,name,Owner,HP,Energy,Range,Speed,empty_path,x,y):
@@ -207,7 +208,7 @@ class CameraGroup(pygame.sprite.Group):
         # dead zone camera
         #self.box_target_camera(player)
         
-        self.keyboard_camera()
+        #self.keyboard_camera()
         self.mouse_camera()
         self.internal_surf.fill(("#408ff7"))  # Fill the internal surface with a color
 
@@ -229,8 +230,12 @@ class CameraGroup(pygame.sprite.Group):
         for character in all_characters:
             offset_pos = character.rect.topleft + self.offset - self.internal_offset
             self.internal_surf.blit(character.image, offset_pos)
+            
             if character.selected:
-                pygame.draw.rect(self.internal_surf, (0, 255, 0), character.rect.move(self.offset - self.internal_offset), 2)
+                if character.Owner == "Me":
+                    pygame.draw.rect(self.internal_surf, (0, 255, 0), character.rect.move(self.offset - self.internal_offset), 2)
+                else:
+                    pygame.draw.rect(self.internal_surf, (255, 0, 0), character.rect.move(self.offset - self.internal_offset), 2)
             else:
                 pygame.draw.rect(self.internal_surf, (255, 0, 0), character.rect.move(self.offset - self.internal_offset), 2)
             
@@ -242,11 +247,11 @@ class CameraGroup(pygame.sprite.Group):
             HPwidth = 50
             HPbar = pygame.transform.scale(HPbar, (HPlength, HPwidth))
             center_offset = offset_pos + (0,-50) - pygame.Vector2(HPlength,0) / 2 + (character.rect.width / 2,0)
-            self.internal_surf.blit(HPbar, center_offset)
-            if character.HP is not 0:
+            if character.HP != 0:
                 x = center_offset.x 
                 y = center_offset.y
-                rect = pygame.Rect(x+3, y+18, HPlength * (character.HP/character.MaxHP) - 5, HPwidth/5)
+                self.internal_surf.blit(HPbar, center_offset)
+                rect = pygame.Rect(x+3, y+17, HPlength * (character.HP/character.MaxHP) - 5, HPwidth/5 + 2)
                 pygame.draw.rect(self.internal_surf, (0,255,0), rect)
                 for i in range(character.MaxHP // 100):
                     division = HPlength/ ((character.MaxHP)/100)
@@ -534,6 +539,8 @@ class Pathfinder(Object):
                     character2.collision_rects = []
                     character2.get_direction()
                     candidate_centers[0].HP -= 20
+                    for character in candidate_centers[0].character:
+                        character.HP -= 20
                     
                     print(f"{candidate_centers[0].name} is down to {candidate_centers[0].HP} HP")
 
@@ -591,7 +598,7 @@ class Structure(Pathfinder):
         for character in self.character:
             unitTime = 8
             if pro.produce(self,unitTime):
-                Man = Unit("man",self.Owner,100,100,0,2,Map,screen,self.path[1].x *32 *zoom_scale ,self.path[1].y *32 *zoom_scale,zoom_scale)
+                Man = Unit("man",self.Owner,100,100,0,2,Map,screen,self.path[1].x *32 *zoom_scale ,self.path[1].y *32 *zoom_scale,zoom_scale,0,0)
                 setup.spriteSetUpdate(self, 'assets/structurestandin.png')
                 self.ulist.add(Man)
                 setup.spriteInheritpath(self,Man)
@@ -610,14 +617,16 @@ class Structure(Pathfinder):
         self.createunit(Map,screen, zoom_scale)
 
 class Unit(Pathfinder):
-    def __init__(self,name,Owner,HP,Energy,Range,Speed,Map,screen,x,y,zoom_scale):
+    def __init__(self,name,Owner,HP,Energy,Range,Speed,Map,screen,x,y,zoom_scale,unitType,unitClass):
         super().__init__(name,Owner,HP,Energy,Range,Speed,Map,screen,x,y,zoom_scale)
         setup.spriteSet(self, 'assets/playerstandin.png', x, y)
+        self.unitClass = unitClass
+        self.unitType = unitType
         self.Type = 0
 
 class Worker(Unit):
-    def __init__(self,name,Owner,HP,Energy,Range,Speed,Map,screen,x,y,zoom_scale):
-        super().__init__(name,Owner,HP,Energy,Range,Speed,Map,screen,x,y,zoom_scale)
+    def __init__(self,name,Owner,HP,Energy,Range,Speed,Map,screen,x,y,zoom_scale,unitType,unitClass):
+        super().__init__(name,Owner,HP,Energy,Range,Speed,Map,screen,x,y,zoom_scale,unitType,unitClass)
         setup.spriteSet(self, 'assets/workerstandin.png', x, y)
         self.Speed = 1.5  # Workers are slower than units
         self.mined_from = None
@@ -718,7 +727,7 @@ class Base(Structure):
         unitTime = 5
         for character in self.character:
             if pro.produce(self,unitTime):
-                Man = Worker("man1",self.Owner,100,100,0,2,Map,screen,character.pos.x,character.pos.y,zoom_scale)
+                Man = Worker("man1",self.Owner,100,100,0,2,Map,screen,character.pos.x,character.pos.y,zoom_scale,0,0)
                 setup.spriteSetUpdate(self, 'assets/structurestandin.png')
                 self.wlist.add(Man)
                 setup.spriteInheritpath(self,Man)

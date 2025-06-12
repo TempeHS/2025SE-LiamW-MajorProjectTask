@@ -7,6 +7,7 @@ from pathfinding.core.diagonal_movement import DiagonalMovement
 
 import classes as Class
 import mouseStuff as mouse
+import unitTypeClassIndex as translator
 
 
 class UI():
@@ -94,10 +95,12 @@ class UI():
 
         # selection interaction
         i = 0
+        selectlist = []
         for collidergroup in colliders:
             for collider in collidergroup:
                 if collider.selected:
                     if collider.Owner == "Me":
+                        selectlist.append(collider)
                         for character in collider.character:
                             UI_image = pygame.transform.scale(character.image, (40,40))
                             UI_border = pygame.transform.scale(self.CommandUIborder, (50,50))
@@ -105,7 +108,30 @@ class UI():
                             screen.blit(UI_border, (495 + i, 870))
                             i += 50
                             unitselect = True
-                    
+        
+        if selectlist:
+            for character in selectlist[0].character:
+                UIunit = pygame.transform.scale(character.image, (100,100))
+                text = selectlist[0].name
+                font = pygame.font.Font('freesansbold.ttf', 32)
+                text = font.render(text, True, (84, 97, 110))
+                textRect = text.get_rect(center=(1160 +UIunit.get_width()/2, 865))
+                screen.blit(text, textRect)
+                screen.blit(UIunit, (1160, 890))
+
+
+                unitType, unitClass = translator.unitTypeClassIndex(selectlist[0].unitType,selectlist[0].unitClass)
+                font = pygame.font.Font('freesansbold.ttf', 16)
+                textType = unitType
+                text = font.render(textType, True, (84, 97, 110))
+                textRect = text.get_rect(center=(1160 +UIunit.get_width()/2 - 40, 1030))
+                screen.blit(text, textRect)
+
+                textClass = unitClass
+                text = font.render(textClass, True, (84, 97, 110))
+                textRect = text.get_rect(center=(1160 +UIunit.get_width()/2 + 40, 1030))
+                screen.blit(text, textRect)
+
         if unitselect:
             screen.blit(self.number[1], (420, 850))
             UIborder = pygame.transform.scale(self.CommandUIborder, (50, 50))

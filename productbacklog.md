@@ -10,15 +10,15 @@
 8. ~~camera system~~
 9. ~~general collision system~~
 10. ~~ownership system for units (enemy, ally)~~
-11. enemy interaction (attacking)
-12. Autopathing (workers and structures)
-13. UI overlay
+11. ~~enemy interaction (attacking)~~
+12. ~~Autopathing (workers and structures)~~
+13. ~~UI overlay~~
 14. create map sprite + mini map
 15. change hitboxes to be inside sprites
 16. worker spread out command
 17. command UI
-18. create basic AI (hard coded)
-19. create sprites
+18. create sprites
+19. create basic AI (hard coded)
 20. Elevation mechanics (flying units and terrain)
 21. Implement other camera control options
 22. create three different factions for the game (classes again)

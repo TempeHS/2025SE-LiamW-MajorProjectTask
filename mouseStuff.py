@@ -1,10 +1,4 @@
 import pygame
-from pygame.locals import *
-import math
-from pathfinding.core.grid import Grid
-from pathfinding.finder.a_star import AStarFinder
-from pathfinding.core.diagonal_movement import DiagonalMovement
-import classes as classes
 
 
 class Mouse():
@@ -33,14 +27,19 @@ class Mouse():
                     char_rect.y = (char_rect.y + offset.y - internal_offset.y) * zoom_scale + offset_y - (internal_offset.y + 16)* zoom_scale + cell_size / 2 #potential calibration error later
                     char_rect.width = char_rect.width * zoom_scale
                     char_rect.height = char_rect.height * zoom_scale
-                    pygame.draw.rect(screen, (0, 255, 0), char_rect, 2)  # Draw character rect for debugging
+                    if character.Owner == "Me":
+                        pygame.draw.rect(screen, (0, 255, 0), char_rect, 2)  # Draw character rect for debugging
                     if selrect.colliderect(char_rect):
                         print(f"Collision with {character.name}")
                         collider.selected = True
+                        for character in collider.character:
+                            character.selected = True
                         gonelist.remove(collider)
 
         for goner in gonelist:
             goner.selected = False
+            for character in goner.character:
+                character.selected = False
 
 
     def selection(self, screen,colliders, offset, internal_offset, zoom_scale, cameralist):
@@ -51,6 +50,7 @@ class Mouse():
                 self.flag = False
             self.selection_rect = pygame.Rect(self.mouse_pos_start[0], self.mouse_pos_start[1], mouse_pos[0] - self.mouse_pos_start[0], mouse_pos[1] - self.mouse_pos_start[1])
             self.selectioncol(self.selection_rect, colliders, offset, internal_offset, zoom_scale, screen,cameralist)
+
             pygame.draw.rect(screen, (255, 0, 0), self.selection_rect, 2)
 
         else:

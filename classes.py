@@ -207,7 +207,7 @@ class CameraGroup(pygame.sprite.Group):
         # dead zone camera
         #self.box_target_camera(player)
         
-        #self.keyboard_camera()
+        self.keyboard_camera()
         self.mouse_camera()
         self.internal_surf.fill(("#408ff7"))  # Fill the internal surface with a color
 
@@ -237,21 +237,21 @@ class CameraGroup(pygame.sprite.Group):
             #HP bar
             
             HPbar = pygame.image.load("assets/UI/health bar Segment.png").convert_alpha()
+            HPsegment = pygame.image.load("assets/UI/health bar grid.png")
             HPlength = 100
             HPwidth = 50
             HPbar = pygame.transform.scale(HPbar, (HPlength, HPwidth))
             center_offset = offset_pos + (0,-50) - pygame.Vector2(HPlength,0) / 2 + (character.rect.width / 2,0)
             self.internal_surf.blit(HPbar, center_offset)
-            for i in range(character.MaxHP // 100):
-                division = HPlength/ ((character.MaxHP)/100)
-                HPsegment = pygame.transform.scale(HPbar, ((division),HPwidth))
-                self.internal_surf.blit(HPsegment, (center_offset + (i* division,0)))
-            for i in range(character.MaxHP // 100):
-                division_width =  division
-                x = center_offset.x + i * division_width
+            if character.HP is not 0:
+                x = center_offset.x 
                 y = center_offset.y
-                rect = pygame.Rect(x+1, y+18, division_width - 1, HPwidth/5)
+                rect = pygame.Rect(x+3, y+18, HPlength * (character.HP/character.MaxHP) - 5, HPwidth/5)
                 pygame.draw.rect(self.internal_surf, (0,255,0), rect)
+                for i in range(character.MaxHP // 100):
+                    division = HPlength/ ((character.MaxHP)/100)
+                    HPsegment = pygame.transform.scale(HPsegment, ((division),HPwidth))
+                    self.internal_surf.blit(HPsegment, (center_offset + (i* division,0)))
             
         
         #add if statement to limit size

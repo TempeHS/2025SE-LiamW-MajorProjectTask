@@ -14,7 +14,7 @@ import UI
 
 
 pygame.init()
-screen = pygame.display.set_mode((1920,1080))
+screen = pygame.display.set_mode((1920,1080)) 
 clock = pygame.time.Clock()
 pygame.event.set_grab(True)
 running = True

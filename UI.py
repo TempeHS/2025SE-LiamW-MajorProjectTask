@@ -101,17 +101,20 @@ class UI():
                 if collider.selected:
                     if collider.Owner == "Me":
                         selectlist.append(collider)
-                        for character in collider.character:
-                            UI_image = pygame.transform.scale(character.image, (40,40))
-                            UI_border = pygame.transform.scale(self.CommandUIborder, (50,50))
-                            screen.blit(UI_image, (500 + i,875))
-                            screen.blit(UI_border, (495 + i, 870))
-                            i += 50
-                            unitselect = True
+        
+        priority = {'Worker': 1, 'Unit': 0, 'Structure': 3, 'Base': 2}
+        selectlist = sorted(selectlist, key=lambda obj: priority.get(obj.__class__.__name__, 99))
+        for collider in selectlist:
+            for character in collider.character:
+                UI_image = pygame.transform.scale(character.image, (40,40))
+                UI_border = pygame.transform.scale(self.CommandUIborder, (50,50))
+                screen.blit(UI_image, (500 + i,875))
+                screen.blit(UI_border, (495 + i, 870))
+                i += 50
+                unitselect = True
         
         if selectlist:
-            priority = {'Worker': 1, 'Unit': 0, 'Structure': 3, 'Base': 2}
-            selectlist = sorted(selectlist, key=lambda obj: priority.get(obj.__class__.__name__, 99))
+
             for character in selectlist[0].character:
                 UIunit = pygame.transform.scale(character.image, (100,100))
                 text = selectlist[0].name

@@ -110,6 +110,8 @@ class UI():
                             unitselect = True
         
         if selectlist:
+            priority = {'Worker': 1, 'Unit': 0, 'Structure': 3, 'Base': 2}
+            selectlist = sorted(selectlist, key=lambda obj: priority.get(obj.__class__.__name__, 99))
             for character in selectlist[0].character:
                 UIunit = pygame.transform.scale(character.image, (100,100))
                 text = selectlist[0].name
@@ -119,18 +121,22 @@ class UI():
                 screen.blit(text, textRect)
                 screen.blit(UIunit, (1160, 890))
 
+                unitType = None
+                unitClass = None
+                if hasattr(selectlist[0],'unitType') and hasattr(selectlist[0],'unitType'):
+                    unitType, unitClass = translator.unitTypeClassIndex(selectlist[0].unitType,selectlist[0].unitClass)
+                
+                if unitType is not None and unitClass is not None:
+                    font = pygame.font.Font('freesansbold.ttf', 16)
+                    textType = unitType
+                    text = font.render(textType, True, (84, 97, 110))
+                    textRect = text.get_rect(center=(1160 +UIunit.get_width()/2 - 40, 1030))
+                    screen.blit(text, textRect)
 
-                unitType, unitClass = translator.unitTypeClassIndex(selectlist[0].unitType,selectlist[0].unitClass)
-                font = pygame.font.Font('freesansbold.ttf', 16)
-                textType = unitType
-                text = font.render(textType, True, (84, 97, 110))
-                textRect = text.get_rect(center=(1160 +UIunit.get_width()/2 - 40, 1030))
-                screen.blit(text, textRect)
-
-                textClass = unitClass
-                text = font.render(textClass, True, (84, 97, 110))
-                textRect = text.get_rect(center=(1160 +UIunit.get_width()/2 + 40, 1030))
-                screen.blit(text, textRect)
+                    textClass = unitClass
+                    text = font.render(textClass, True, (84, 97, 110))
+                    textRect = text.get_rect(center=(1160 +UIunit.get_width()/2 + 40, 1030))
+                    screen.blit(text, textRect)
 
         if unitselect:
             screen.blit(self.number[1], (420, 850))

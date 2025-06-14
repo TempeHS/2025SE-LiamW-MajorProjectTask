@@ -4,7 +4,9 @@ import pygame
 
 def spriteSet(self,Image,x,y):
     for character in self.character:
-        if self.Owner != "Me":
+        if self.Owner == 'Neutral':
+            pass
+        elif self.Owner != "Me":
             before, after = Image.split(".")
             Image = f"{before}E.{after}"
         image = pygame.image.load(Image).convert_alpha()

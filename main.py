@@ -26,7 +26,10 @@ confirm = False
 testdraw = False
 candidates = []
 #Map
-tmx_data =load_pygame("")
+tmx_data = load_pygame("assets/Map Small.tmx")
+for layer in tmx_data.visible_layers:
+    print(layer)
+
 #bg_surf = pygame.transform.scale(pygame.image.load('assets/backgroundstandin.png').convert(),(1280,720))
 Map = [[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
        [1,0,1,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1],

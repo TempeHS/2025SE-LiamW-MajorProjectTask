@@ -114,7 +114,6 @@ class UI():
                 unitselect = True
         
         if selectlist:
-
             for character in selectlist[0].character:
                 UIunit = pygame.transform.scale(character.image, (100,100))
                 text = selectlist[0].name

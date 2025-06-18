@@ -5,6 +5,7 @@ from pathfinding.core.diagonal_movement import DiagonalMovement
 from pygame.locals import *
 from sys import exit
 import math
+from pytmx.util_pygame import load_pygame
 
 import classes as Class
 import mouseStuff as mouse
@@ -25,6 +26,7 @@ confirm = False
 testdraw = False
 candidates = []
 #Map
+tmx_data =load_pygame('')
 #bg_surf = pygame.transform.scale(pygame.image.load('assets/backgroundstandin.png').convert(),(1280,720))
 Map = [[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
        [1,0,1,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
@@ -62,6 +64,7 @@ Map = [[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]]
 
+#unitsetup
 cameralist = Class.CameraGroup(Map)
 structurelist = Class.CameraGroup(Map)
 unitlist = Class.CameraGroup(Map)
@@ -85,6 +88,7 @@ UI = UI.UI()
 player_pos = pygame.Vector2(screen.get_width() / 2, screen.get_height() / 2)
 offset = cameralist.offset
 internal_offset = cameralist.internal_offset
+
 # main game loop
 while running:
 	# poll for events

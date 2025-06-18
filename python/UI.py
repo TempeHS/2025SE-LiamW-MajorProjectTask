@@ -5,9 +5,9 @@ from pathfinding.core.grid import Grid
 from pathfinding.finder.a_star import AStarFinder
 from pathfinding.core.diagonal_movement import DiagonalMovement
 
-import classes as Class
-import mouseStuff as mouse
-import unitTypeClassIndex as translator
+import python.classes as Class
+import python.mouseStuff as mouse
+import python.functions.unitTypeClassIndex as translator
 
 
 class UI():

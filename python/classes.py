@@ -5,11 +5,11 @@ from pathfinding.core.grid import Grid
 from pathfinding.finder.a_star import AStarFinder
 from pathfinding.core.diagonal_movement import DiagonalMovement
 
-import unitsetup as setup
-import production as pro
-import testdraw as test
-import autopath as path
-import unitTypeClassIndex as translator
+import python.functions.unitsetup as setup
+import python.functions.production as pro
+import python.functions.testdraw as test
+import python.autopath as path
+import python.functions.unitTypeClassIndex as translator
 
 class Object(pygame.sprite.Sprite):
     def __init__(self,name,Owner,HP,Energy,Range,Speed,empty_path,x,y):
@@ -264,7 +264,6 @@ class CameraGroup(pygame.sprite.Group):
         scaled_rect = scaled_surf.get_rect(center=(self.half_width, self.half_height))
         self.display_surface.blit(scaled_surf, scaled_rect)
         pygame.draw.rect(self.display_surface, (0, 255, 0), self.camera_rect, 5)
-
 
 
 class Pathfinder(Object):

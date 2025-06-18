@@ -2,8 +2,8 @@ from pathfinding.core.grid import Grid
 from pathfinding.finder.a_star import AStarFinder
 from pathfinding.core.diagonal_movement import DiagonalMovement
 
-import classes as Class
-import unitsetup as setup
+import python.classes as Class
+import python.functions.unitsetup as setup
 
 
 def ResourcePath(self, structurelist,zoom_scale,resourcelist): #resource to base

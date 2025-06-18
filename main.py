@@ -26,7 +26,7 @@ confirm = False
 testdraw = False
 candidates = []
 #Map
-tmx_data = load_pygame("assets/Map Small.tmx")
+tmx_data = load_pygame("assets/Map/Map Small.tmx")
 for layer in tmx_data.visible_layers:
     print(layer)
 

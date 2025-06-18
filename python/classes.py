@@ -4,12 +4,14 @@ import math
 from pathfinding.core.grid import Grid
 from pathfinding.finder.a_star import AStarFinder
 from pathfinding.core.diagonal_movement import DiagonalMovement
+from pytmx.util_pygame import load_pygame
 
 import python.functions.unitsetup as setup
 import python.functions.production as pro
 import python.functions.testdraw as test
 import python.autopath as path
 import python.functions.unitTypeClassIndex as translator
+import python.map as maptile
 
 class Object(pygame.sprite.Sprite):
     def __init__(self,name,Owner,HP,Energy,Range,Speed,empty_path,x,y):
@@ -103,7 +105,7 @@ class CameraGroup(pygame.sprite.Group):
 
         #camera zoom
         self.zoom_scale = 1.0 
-        self.internal_surf_size = (2500,2500)
+        self.internal_surf_size = (5000,5000)
         self.internal_surf = pygame.Surface(self.internal_surf_size, flags=pygame.SRCALPHA)
         self.internal_rect = self.internal_surf.get_rect(center = (self.half_width, self.half_height))
         self.internal_surf_size_vector = pygame.math.Vector2(self.internal_surf_size)
@@ -218,6 +220,20 @@ class CameraGroup(pygame.sprite.Group):
 
         ground_offset = self.ground_rect.topleft + self.offset - self.internal_offset
         self.internal_surf.blit(self.ground_surf, ground_offset)
+        
+        #THIS LAGS COMPUTER REALLY HARD
+        # this is too local rn
+        tmx_data = load_pygame("assets/Map/Map Small.tmx")
+        spriteGroup = pygame.sprite.Group()
+        tilesizefactor = 4 #add this to be changeable
+        for layer in tmx_data.layers:
+            for x,y,surf in layer.tiles():
+                pos = ((x - y)* 16 * tilesizefactor , (x + y) * 8 * tilesizefactor)
+                maptile.Map(pos= pos, surf = surf, groups= spriteGroup)
+        for sprite in spriteGroup:
+            spriteprint = pygame.transform.scale(sprite.image, (32*tilesizefactor,32*tilesizefactor))
+            self.internal_surf.blit(spriteprint, sprite.pos + ground_offset)
+
         self.draw_grid(self.internal_surf, ground_offset)
         # Collect all characters from all sprites
         all_characters = []

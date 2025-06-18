@@ -8,6 +8,7 @@ import math
 from pytmx.util_pygame import load_pygame
 
 import python.classes as Class
+import python.map as maptile
 import python.mouseStuff as mouse
 import python.event as eventH
 import python.functions.testdraw as test
@@ -26,18 +27,14 @@ confirm = False
 testdraw = False
 candidates = []
 #Map
-tmx_data = load_pygame("assets/Map/Map Small.tmx")
-layer = tmx_data.get_layer_by_name('Tile Layer 1')
-"""
-for x,y,surf in layer.tiles():
-    print(x)
-    print(y)
-    print(surf)
-"""
 
+tmx_data = load_pygame("assets/Map/Map Small.tmx")
+spriteGroup = pygame.sprite.Group()
+layer = tmx_data.get_layer_by_name("Tile Layer 1")
+Map = layer.data
 #bg_surf = pygame.transform.scale(pygame.image.load('assets/backgroundstandin.png').convert(),(1280,720))
 
-Map = layer.data
+
 
 #unitsetup
 cameralist = Class.CameraGroup(Map)
@@ -130,6 +127,8 @@ while running:
     
     UI.UIdraw(screen,[structurelist, unitlist, resourcelist, workerlist],dt)
     mouse.selection(screen,[structurelist, unitlist, resourcelist, workerlist],offset, internal_offset, cameralist.zoom_scale,cameralist)
+    
+
     pygame.display.update()
     # limits FPS to 60
     # dt is delta time in seconds since last frame, used for framerate-

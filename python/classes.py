@@ -201,7 +201,7 @@ class CameraGroup(pygame.sprite.Group):
         # Draw grid lines or cells
         for row in range(len(self.Map)):
             for col in range(len(self.Map[0])):
-                cell_x = ground_offset.x + col * 32 + 300
+                cell_x = ground_offset.x + col * 32
                 cell_y = ground_offset.y + row * 32 
                 rect = pygame.Rect(cell_x, cell_y, 32, 32)
                 pygame.draw.rect(surface, (200, 200, 200), rect, 1)  # Draw grid cell outline

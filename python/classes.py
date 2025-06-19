@@ -201,10 +201,11 @@ class CameraGroup(pygame.sprite.Group):
         # Draw grid lines or cells
         for row in range(len(self.Map)):
             for col in range(len(self.Map[0])):
-                cell_x = ground_offset.x + col * 32
-                cell_y = ground_offset.y + row * 32
+                cell_x = ground_offset.x + col * 32 + 300
+                cell_y = ground_offset.y + row * 32 
                 rect = pygame.Rect(cell_x, cell_y, 32, 32)
                 pygame.draw.rect(surface, (200, 200, 200), rect, 1)  # Draw grid cell outline
+        
 
     def custom_draw(self,player):
         # dead zone camera
@@ -220,10 +221,12 @@ class CameraGroup(pygame.sprite.Group):
 
         ground_offset = self.ground_rect.topleft + self.offset - self.internal_offset
         self.internal_surf.blit(self.ground_surf, ground_offset)
+        ground = pygame.image.load("assets/Map Small.png")
+        ground = pygame.transform.scale(ground,(6144,3072))
+        self.internal_surf.blit(ground,ground_offset - (2700,200))
         
         #THIS LAGS COMPUTER REALLY HARD
-        # this is too local rn
-        
+        """
         tmx_data = load_pygame("assets/Map/Map Small.tmx")
         spriteGroup = pygame.sprite.Group()
         tilesizefactor = 4 #add this to be changeable
@@ -234,6 +237,7 @@ class CameraGroup(pygame.sprite.Group):
         for sprite in spriteGroup:
             spriteprint = pygame.transform.scale(sprite.image, (32*tilesizefactor,32*tilesizefactor))
             self.internal_surf.blit(spriteprint, sprite.pos + ground_offset)
+        """
 
         self.draw_grid(self.internal_surf, ground_offset)
         # Collect all characters from all sprites

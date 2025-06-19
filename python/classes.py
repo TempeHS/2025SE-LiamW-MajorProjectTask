@@ -223,6 +223,7 @@ class CameraGroup(pygame.sprite.Group):
         
         #THIS LAGS COMPUTER REALLY HARD
         # this is too local rn
+        
         tmx_data = load_pygame("assets/Map/Map Small.tmx")
         spriteGroup = pygame.sprite.Group()
         tilesizefactor = 4 #add this to be changeable

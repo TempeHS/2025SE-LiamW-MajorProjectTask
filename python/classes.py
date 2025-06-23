@@ -223,7 +223,7 @@ class CameraGroup(pygame.sprite.Group):
         self.internal_surf.blit(self.ground_surf, ground_offset)
         ground = pygame.image.load("assets/Map Small.png")
         ground = pygame.transform.scale(ground,(6144,3072))
-        self.internal_surf.blit(ground,ground_offset - (2700,200))
+        self.internal_surf.blit(ground,ground_offset - (1810,700) + (0,512))
         
         #THIS LAGS COMPUTER REALLY HARD
         """

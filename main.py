@@ -17,8 +17,8 @@ import python.UI as UI
 
 pygame.init()
 # for laptop 
-#screen = pygame.display.set_mode((1080,720))
-screen = pygame.display.set_mode((1920,1080)) 
+screen = pygame.display.set_mode((1080,720))
+#screen = pygame.display.set_mode((1920,1080)) 
 clock = pygame.time.Clock()
 pygame.event.set_grab(True)
 running = True

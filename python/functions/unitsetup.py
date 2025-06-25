@@ -16,6 +16,7 @@ def spriteSet(self,Image,x,y):
         character.rect = cropped_image.get_rect(center=(x, y))
         character.pos = character.rect.center
 
+
 def spriteSetUpdate(self,Image):
     for character in self.character:
         if self.Owner != "Me":
@@ -41,7 +42,7 @@ def spriteInheritpath(self, product):
         point_rect = pygame.Rect(x - 2, y - 2, 4, 4)  # Same as your collision_rects
 
         # Check collision with any structure rect
-        if not any(point_rect.colliderect(srect) for srect in structure_rects): 
+        if not any(point_rect.colliderect(srect) for srect in structure_rects):
             filtered_path.append(point)
 
     # Optionally remove the first element if you want to skip the starting cell

@@ -16,9 +16,13 @@ class UI():
         self.UIbotBackground = pygame.transform.scale(UIbotBackground, (1920, 1080))
         CommandUIborder = pygame.image.load("assets/UI/Command UI border icon.png").convert_alpha()
         self.CommandUIborder = pygame.transform.scale(CommandUIborder, (80,80))
+        MapSprite = pygame.image.load("assets/Map Small.png").convert_alpha()
+        self.MapSprite = pygame.transform.scale(MapSprite,(768,384)).convert_alpha()
         self.number = []
         self.resource = 0
         digits = pygame.image.load("assets/UI/Digits.png").convert_alpha()
+        self.resourcesprite = pygame.image.load("assets/resourcestandin.png").convert_alpha()
+        self.unitsprite = pygame.image.load("assets/playerstandin.png").convert_alpha()
         for i in range(10):
             number = pygame.transform.scale(digits.subsurface((0 +80 * i , 0, 80, 80)), (50, 50))
             self.number.append(number)
@@ -29,6 +33,9 @@ class UI():
     def UIdraw(self,screen,colliders,dt):
         unitselect = False
         #basic setup
+        map_rect = pygame.Rect(0, 730, 400, 400)
+        pygame.draw.rect(screen,"#3684eb",map_rect)
+        screen.blit(self.MapSprite,(-232,716))
         screen.blit(self.UIbotBackground, (0, 0)) #if you need to optimise don't draw this every frame and have it in the main line
         grouplist = self.number[1:10]
         for number in grouplist:
@@ -53,8 +60,7 @@ class UI():
 
         #resource counter
         resourcecount = 0
-        resource = pygame.image.load("assets/resourcestandin.png").convert_alpha()
-        resource = pygame.transform.scale(resource, (50, 50))
+        resource = pygame.transform.scale(self.resourcesprite, (50, 50))
         screen.blit(resource, (1500, 10))
         for structure in colliders[0]:
             if isinstance(structure, Class.Base):
@@ -71,8 +77,7 @@ class UI():
 
         #unit counter
         unitcount = 0
-        unit = pygame.image.load("assets/playerstandin.png").convert_alpha()
-        unit = pygame.transform.scale(unit, (50, 50))
+        unit = pygame.transform.scale(self.unitsprite, (50, 50))
         screen.blit (unit,(1700,10))
         for collidergroup in colliders:
             for unit in collidergroup:
@@ -144,5 +149,22 @@ class UI():
             screen.blit(self.number[1], (420, 850))
             UIborder = pygame.transform.scale(self.CommandUIborder, (50, 50))
             screen.blit(UIborder, (420, 850))
-            screen.blit(self.CommandUIborder, (1465, 775)) #this going to be with the unit not here soon
+            font = pygame.font.Font('freesansbold.ttf', 16)
+            for i in range(2):
+                screen.blit(self.CommandUIborder, (1465 + i* 100, 775))
+                if isinstance(selectlist[0],Class.Unit):
+                    if i == 0:
+                        text = font.render("Move", True, (84, 97, 110))
+                    elif isinstance(selectlist[0],Class.Worker):
+                        text = font.render("Gather", True, (84, 97, 110))
+                    else:
+                        
+                        text = font.render("Attack", True, (84, 97, 110))
+                if isinstance(selectlist[0],Class.Structure):
+                    if i == 0:
+                        text = font.render("Path", True, (84, 97, 110))
+                    else:
+                        text = font.render("Build", True, (84, 97, 110))
+                textRect = text.get_rect(center=(1465 + i* 100 + self.CommandUIborder.get_width()/2, 775 + self.CommandUIborder.get_height()/2))
+                screen.blit(text, textRect)
 

@@ -223,11 +223,15 @@ class CameraGroup(pygame.sprite.Group):
             #self.center_target_camera(player)
 
         ground_offset = self.ground_rect.topleft + self.offset - self.internal_offset
-        self.internal_surf.blit(self.ground_surf, ground_offset)
+        #test background
+
+        #self.internal_surf.blit(self.ground_surf, ground_offset)
+
         ground = pygame.transform.scale(self.ground,(6144,3072))
-        self.internal_surf.blit(ground,ground_offset - (1810,700) + (0,512))
+        #self.internal_surf.blit(ground,ground_offset - (1810,700) + (0,512))
         
-        self.draw_grid(self.internal_surf, ground_offset)
+        #self.draw_grid(self.internal_surf, ground_offset)
+
         # Collect all characters from all sprites
         all_characters = []
         for sprites in self.sprites():
@@ -239,7 +243,6 @@ class CameraGroup(pygame.sprite.Group):
         for character in all_characters:
             offset_pos = character.rect.topleft + self.offset - self.internal_offset
             self.internal_surf.blit(character.image, offset_pos)
-            
             if character.selected:
                 if character.Owner == "Me":
                     pygame.draw.rect(self.internal_surf, (0, 255, 0), character.rect.move(self.offset - self.internal_offset), 2)
@@ -247,7 +250,6 @@ class CameraGroup(pygame.sprite.Group):
                     pygame.draw.rect(self.internal_surf, (255, 0, 0), character.rect.move(self.offset - self.internal_offset), 2)
             else:
                 pygame.draw.rect(self.internal_surf, (255, 0, 0), character.rect.move(self.offset - self.internal_offset), 2)
-            
             #HP bar
             
             HPlength = 100
@@ -605,7 +607,7 @@ class Structure(Pathfinder):
         for character in self.character:
             unitTime = 8
             if pro.produce(self,unitTime):
-                Man = Unit("man",self.Owner,300,100,0,2,Map,screen,self.path[1].x *32 *zoom_scale ,self.path[1].y *32 *zoom_scale,zoom_scale,0,0)
+                Man = Unit("man",self.Owner,300,100,0,4,Map,screen,self.path[1].x *32 *zoom_scale ,self.path[1].y *32 *zoom_scale,zoom_scale,0,0)
                 setup.spriteSetUpdate(self, 'assets/structurestandin.png')
                 colliders[1].add(Man)
                 cameralist.add(Man)
@@ -695,7 +697,7 @@ class Worker(Unit):
 
     def mining(self,resource):
         self.mining_progress += 1
-        if self.mining_progress == 600:
+        if self.mining_progress == 200:
             # Handle resource collection here
             print("Resource collected!")
             self.mining_progress = 0
@@ -735,7 +737,7 @@ class Base(Structure):
         unitTime = 5
         for character in self.character:
             if pro.produce(self,unitTime):
-                Man = Worker("man1",self.Owner,200,100,0,2,Map,screen,character.pos.x,character.pos.y,zoom_scale,0,0)
+                Man = Worker("man1",self.Owner,200,100,0,4,Map,screen,character.pos.x + 10,character.pos.y + 10,zoom_scale,0,0)
                 setup.spriteSetUpdate(self, 'assets/structurestandin.png')
                 colliders[3].add(Man)
                 cameralist.add(Man)

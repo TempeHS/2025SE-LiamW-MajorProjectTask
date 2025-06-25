@@ -41,7 +41,7 @@ def spriteInheritpath(self, product):
         point_rect = pygame.Rect(x - 2, y - 2, 4, 4)  # Same as your collision_rects
 
         # Check collision with any structure rect
-        if not any(point_rect.colliderect(srect) for srect in structure_rects): #not sure how this code works need to research it
+        if not any(point_rect.colliderect(srect) for srect in structure_rects): 
             filtered_path.append(point)
 
     # Optionally remove the first element if you want to skip the starting cell

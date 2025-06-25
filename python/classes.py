@@ -4,12 +4,14 @@ import math
 from pathfinding.core.grid import Grid
 from pathfinding.finder.a_star import AStarFinder
 from pathfinding.core.diagonal_movement import DiagonalMovement
+from pytmx.util_pygame import load_pygame
 
-import unitsetup as setup
-import production as pro
-import testdraw as test
-import autopath as path
-import unitTypeClassIndex as translator
+import python.functions.unitsetup as setup
+import python.functions.production as pro
+import python.functions.testdraw as test
+import python.autopath as path
+import python.functions.unitTypeClassIndex as translator
+import python.map as maptile
 
 class Object(pygame.sprite.Sprite):
     def __init__(self,name,Owner,HP,Energy,Range,Speed,empty_path,x,y):
@@ -89,6 +91,9 @@ class CameraGroup(pygame.sprite.Group):
         super().__init__()
         self.display_surface = pygame.display.get_surface()
         self.ground_surf = pygame.image.load('assets/backgroundstandin.png').convert()
+        self.ground = pygame.image.load("assets/Map Small.png")
+        self.HPbar = pygame.image.load("assets/UI/health bar Segment.png").convert_alpha()
+        self.HPsegment = pygame.image.load("assets/UI/health bar grid.png")
         self.ground_rect = self.ground_surf.get_rect(topleft = (0,0))
         self.Map = Map
         #camera offset
@@ -103,7 +108,7 @@ class CameraGroup(pygame.sprite.Group):
 
         #camera zoom
         self.zoom_scale = 1.0 
-        self.internal_surf_size = (2500,2500)
+        self.internal_surf_size = (5000,5000)
         self.internal_surf = pygame.Surface(self.internal_surf_size, flags=pygame.SRCALPHA)
         self.internal_rect = self.internal_surf.get_rect(center = (self.half_width, self.half_height))
         self.internal_surf_size_vector = pygame.math.Vector2(self.internal_surf_size)
@@ -200,9 +205,10 @@ class CameraGroup(pygame.sprite.Group):
         for row in range(len(self.Map)):
             for col in range(len(self.Map[0])):
                 cell_x = ground_offset.x + col * 32
-                cell_y = ground_offset.y + row * 32
+                cell_y = ground_offset.y + row * 32 
                 rect = pygame.Rect(cell_x, cell_y, 32, 32)
                 pygame.draw.rect(surface, (200, 200, 200), rect, 1)  # Draw grid cell outline
+        
 
     def custom_draw(self,player):
         # dead zone camera
@@ -217,8 +223,15 @@ class CameraGroup(pygame.sprite.Group):
             #self.center_target_camera(player)
 
         ground_offset = self.ground_rect.topleft + self.offset - self.internal_offset
-        self.internal_surf.blit(self.ground_surf, ground_offset)
-        self.draw_grid(self.internal_surf, ground_offset)
+        #test background
+
+        #self.internal_surf.blit(self.ground_surf, ground_offset)
+
+        ground = pygame.transform.scale(self.ground,(6144,3072))
+        #self.internal_surf.blit(ground,ground_offset - (1810,700) + (0,512))
+        
+        #self.draw_grid(self.internal_surf, ground_offset)
+
         # Collect all characters from all sprites
         all_characters = []
         for sprites in self.sprites():
@@ -230,7 +243,6 @@ class CameraGroup(pygame.sprite.Group):
         for character in all_characters:
             offset_pos = character.rect.topleft + self.offset - self.internal_offset
             self.internal_surf.blit(character.image, offset_pos)
-            
             if character.selected:
                 if character.Owner == "Me":
                     pygame.draw.rect(self.internal_surf, (0, 255, 0), character.rect.move(self.offset - self.internal_offset), 2)
@@ -238,14 +250,11 @@ class CameraGroup(pygame.sprite.Group):
                     pygame.draw.rect(self.internal_surf, (255, 0, 0), character.rect.move(self.offset - self.internal_offset), 2)
             else:
                 pygame.draw.rect(self.internal_surf, (255, 0, 0), character.rect.move(self.offset - self.internal_offset), 2)
-            
             #HP bar
             
-            HPbar = pygame.image.load("assets/UI/health bar Segment.png").convert_alpha()
-            HPsegment = pygame.image.load("assets/UI/health bar grid.png")
             HPlength = 100
             HPwidth = 50
-            HPbar = pygame.transform.scale(HPbar, (HPlength, HPwidth))
+            HPbar = pygame.transform.scale(self.HPbar, (HPlength, HPwidth))
             center_offset = offset_pos + (0,-50) - pygame.Vector2(HPlength,0) / 2 + (character.rect.width / 2,0)
             if character.HP != 0:
                 x = center_offset.x 
@@ -255,7 +264,7 @@ class CameraGroup(pygame.sprite.Group):
                 pygame.draw.rect(self.internal_surf, (0,255,0), rect)
                 for i in range(character.MaxHP // 100):
                     division = HPlength/ ((character.MaxHP)/100)
-                    HPsegment = pygame.transform.scale(HPsegment, ((division),HPwidth))
+                    HPsegment = pygame.transform.scale(self.HPsegment, ((division),HPwidth))
                     self.internal_surf.blit(HPsegment, (center_offset + (i* division,0)))
             
         
@@ -264,7 +273,6 @@ class CameraGroup(pygame.sprite.Group):
         scaled_rect = scaled_surf.get_rect(center=(self.half_width, self.half_height))
         self.display_surface.blit(scaled_surf, scaled_rect)
         pygame.draw.rect(self.display_surface, (0, 255, 0), self.camera_rect, 5)
-
 
 
 class Pathfinder(Object):
@@ -356,6 +364,7 @@ class Pathfinder(Object):
         world_x = internal_x - offset.x + internal_offset.x + (internal_offset.x)
         world_y = internal_y - offset.y + internal_offset.y + (internal_offset.y)
 
+        
         endx = math.floor((world_x) / 32)
         endy = math.floor((world_y) / 32)
 
@@ -593,14 +602,15 @@ class Structure(Pathfinder):
                 proflag[n]  = 0
                 break
             n -= 1
-    def createunit(self,Map,screen,zoom_scale):
+    def createunit(self,Map,screen,zoom_scale,colliders,cameralist):
         #placeholder build timer
         for character in self.character:
             unitTime = 8
             if pro.produce(self,unitTime):
-                Man = Unit("man",self.Owner,100,100,0,2,Map,screen,self.path[1].x *32 *zoom_scale ,self.path[1].y *32 *zoom_scale,zoom_scale,0,0)
+                Man = Unit("man",self.Owner,300,100,0,4,Map,screen,self.path[1].x *32 *zoom_scale ,self.path[1].y *32 *zoom_scale,zoom_scale,0,0)
                 setup.spriteSetUpdate(self, 'assets/structurestandin.png')
-                self.ulist.add(Man)
+                colliders[1].add(Man)
+                cameralist.add(Man)
                 setup.spriteInheritpath(self,Man)
 
 
@@ -614,7 +624,7 @@ class Structure(Pathfinder):
         productionflag = self.proflag
         if 1 in productionflag:
             self.production(time)
-        self.createunit(Map,screen, zoom_scale)
+        self.createunit(Map,screen, zoom_scale,colliders,cameralist)
 
 class Unit(Pathfinder):
     def __init__(self,name,Owner,HP,Energy,Range,Speed,Map,screen,x,y,zoom_scale,unitType,unitClass):
@@ -687,7 +697,7 @@ class Worker(Unit):
 
     def mining(self,resource):
         self.mining_progress += 1
-        if self.mining_progress == 600:
+        if self.mining_progress == 200:
             # Handle resource collection here
             print("Resource collected!")
             self.mining_progress = 0
@@ -722,12 +732,13 @@ class Base(Structure):
         self.queue = [0,0,0,0,0]
         self.proflag = [0,0,0,0,0]
 
-    def createunit(self,Map,screen,zoom_scale):
+    def createunit(self,Map,screen,zoom_scale,colliders,cameralist):
         #placeholder build timer
         unitTime = 5
         for character in self.character:
             if pro.produce(self,unitTime):
-                Man = Worker("man1",self.Owner,100,100,0,2,Map,screen,character.pos.x,character.pos.y,zoom_scale,0,0)
+                Man = Worker("man1",self.Owner,200,100,0,4,Map,screen,character.pos.x + 10,character.pos.y + 10,zoom_scale,0,0)
                 setup.spriteSetUpdate(self, 'assets/structurestandin.png')
-                self.wlist.add(Man)
+                colliders[3].add(Man)
+                cameralist.add(Man)
                 setup.spriteInheritpath(self,Man)

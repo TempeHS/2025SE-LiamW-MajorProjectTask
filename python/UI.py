@@ -5,9 +5,9 @@ from pathfinding.core.grid import Grid
 from pathfinding.finder.a_star import AStarFinder
 from pathfinding.core.diagonal_movement import DiagonalMovement
 
-import classes as Class
-import mouseStuff as mouse
-import unitTypeClassIndex as translator
+import python.classes as Class
+import python.mouseStuff as mouse
+import python.functions.unitTypeClassIndex as translator
 
 
 class UI():
@@ -16,9 +16,13 @@ class UI():
         self.UIbotBackground = pygame.transform.scale(UIbotBackground, (1920, 1080))
         CommandUIborder = pygame.image.load("assets/UI/Command UI border icon.png").convert_alpha()
         self.CommandUIborder = pygame.transform.scale(CommandUIborder, (80,80))
+        MapSprite = pygame.image.load("assets/Map Small.png").convert_alpha()
+        self.MapSprite = pygame.transform.scale(MapSprite,(768,384)).convert_alpha()
         self.number = []
         self.resource = 0
         digits = pygame.image.load("assets/UI/Digits.png").convert_alpha()
+        self.resourcesprite = pygame.image.load("assets/resourcestandin.png").convert_alpha()
+        self.unitsprite = pygame.image.load("assets/playerstandin.png").convert_alpha()
         for i in range(10):
             number = pygame.transform.scale(digits.subsurface((0 +80 * i , 0, 80, 80)), (50, 50))
             self.number.append(number)
@@ -29,6 +33,9 @@ class UI():
     def UIdraw(self,screen,colliders,dt):
         unitselect = False
         #basic setup
+        map_rect = pygame.Rect(0, 730, 400, 400)
+        pygame.draw.rect(screen,"#3684eb",map_rect)
+        screen.blit(self.MapSprite,(-232,716))
         screen.blit(self.UIbotBackground, (0, 0)) #if you need to optimise don't draw this every frame and have it in the main line
         grouplist = self.number[1:10]
         for number in grouplist:
@@ -53,8 +60,7 @@ class UI():
 
         #resource counter
         resourcecount = 0
-        resource = pygame.image.load("assets/resourcestandin.png").convert_alpha()
-        resource = pygame.transform.scale(resource, (50, 50))
+        resource = pygame.transform.scale(self.resourcesprite, (50, 50))
         screen.blit(resource, (1500, 10))
         for structure in colliders[0]:
             if isinstance(structure, Class.Base):
@@ -71,8 +77,7 @@ class UI():
 
         #unit counter
         unitcount = 0
-        unit = pygame.image.load("assets/playerstandin.png").convert_alpha()
-        unit = pygame.transform.scale(unit, (50, 50))
+        unit = pygame.transform.scale(self.unitsprite, (50, 50))
         screen.blit (unit,(1700,10))
         for collidergroup in colliders:
             for unit in collidergroup:
@@ -101,13 +106,17 @@ class UI():
                 if collider.selected:
                     if collider.Owner == "Me":
                         selectlist.append(collider)
-                        for character in collider.character:
-                            UI_image = pygame.transform.scale(character.image, (40,40))
-                            UI_border = pygame.transform.scale(self.CommandUIborder, (50,50))
-                            screen.blit(UI_image, (500 + i,875))
-                            screen.blit(UI_border, (495 + i, 870))
-                            i += 50
-                            unitselect = True
+        
+        priority = {'Worker': 1, 'Unit': 0, 'Structure': 3, 'Base': 2}
+        selectlist = sorted(selectlist, key=lambda obj: priority.get(obj.__class__.__name__, 99))
+        for collider in selectlist:
+            for character in collider.character:
+                UI_image = pygame.transform.scale(character.image, (40,40))
+                UI_border = pygame.transform.scale(self.CommandUIborder, (50,50))
+                screen.blit(UI_image, (500 + i,875))
+                screen.blit(UI_border, (495 + i, 870))
+                i += 50
+                unitselect = True
         
         if selectlist:
             for character in selectlist[0].character:
@@ -119,22 +128,43 @@ class UI():
                 screen.blit(text, textRect)
                 screen.blit(UIunit, (1160, 890))
 
+                unitType = None
+                unitClass = None
+                if hasattr(selectlist[0],'unitType') and hasattr(selectlist[0],'unitType'):
+                    unitType, unitClass = translator.unitTypeClassIndex(selectlist[0].unitType,selectlist[0].unitClass)
+                
+                if unitType is not None and unitClass is not None:
+                    font = pygame.font.Font('freesansbold.ttf', 16)
+                    textType = unitType
+                    text = font.render(textType, True, (84, 97, 110))
+                    textRect = text.get_rect(center=(1160 +UIunit.get_width()/2 - 40, 1030))
+                    screen.blit(text, textRect)
 
-                unitType, unitClass = translator.unitTypeClassIndex(selectlist[0].unitType,selectlist[0].unitClass)
-                font = pygame.font.Font('freesansbold.ttf', 16)
-                textType = unitType
-                text = font.render(textType, True, (84, 97, 110))
-                textRect = text.get_rect(center=(1160 +UIunit.get_width()/2 - 40, 1030))
-                screen.blit(text, textRect)
-
-                textClass = unitClass
-                text = font.render(textClass, True, (84, 97, 110))
-                textRect = text.get_rect(center=(1160 +UIunit.get_width()/2 + 40, 1030))
-                screen.blit(text, textRect)
+                    textClass = unitClass
+                    text = font.render(textClass, True, (84, 97, 110))
+                    textRect = text.get_rect(center=(1160 +UIunit.get_width()/2 + 40, 1030))
+                    screen.blit(text, textRect)
 
         if unitselect:
             screen.blit(self.number[1], (420, 850))
             UIborder = pygame.transform.scale(self.CommandUIborder, (50, 50))
             screen.blit(UIborder, (420, 850))
-            screen.blit(self.CommandUIborder, (1465, 775)) #this going to be with the unit not here soon
+            font = pygame.font.Font('freesansbold.ttf', 16)
+            for i in range(2):
+                screen.blit(self.CommandUIborder, (1465 + i* 100, 775))
+                if isinstance(selectlist[0],Class.Unit):
+                    if i == 0:
+                        text = font.render("Move", True, (84, 97, 110))
+                    elif isinstance(selectlist[0],Class.Worker):
+                        text = font.render("Gather", True, (84, 97, 110))
+                    else:
+                        
+                        text = font.render("Attack", True, (84, 97, 110))
+                if isinstance(selectlist[0],Class.Structure):
+                    if i == 0:
+                        text = font.render("Path", True, (84, 97, 110))
+                    else:
+                        text = font.render("Build", True, (84, 97, 110))
+                textRect = text.get_rect(center=(1465 + i* 100 + self.CommandUIborder.get_width()/2, 775 + self.CommandUIborder.get_height()/2))
+                screen.blit(text, textRect)
 

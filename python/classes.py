@@ -238,7 +238,6 @@ class CameraGroup(pygame.sprite.Group):
             spriteprint = pygame.transform.scale(sprite.image, (32*tilesizefactor,32*tilesizefactor))
             self.internal_surf.blit(spriteprint, sprite.pos + ground_offset)
         """
-
         self.draw_grid(self.internal_surf, ground_offset)
         # Collect all characters from all sprites
         all_characters = []

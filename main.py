@@ -30,10 +30,17 @@ testdraw = False
 candidates = []
 #Map
 
-tmx_data = load_pygame("assets/Map/Map Small.tmx")
+tmx_data = load_pygame("assets/Map/Collision Tile Mapping.tmx")
 spriteGroup = pygame.sprite.Group()
 layer = tmx_data.get_layer_by_name("Tile Layer 1")
 Map = layer.data
+for row in Map:
+    for number in row:
+        if number == 2:
+            Map[Map.index(row)][row.index(Map)] == 0
+        if number == 0:
+            Map[Map.index(row)][row.index(Map)] == 1
+
 #bg_surf = pygame.transform.scale(pygame.image.load('assets/backgroundstandin.png').convert(),(1280,720))
 
 

@@ -28,8 +28,8 @@ attacking = False
 confirm = False
 testdraw = False
 candidates = []
-#Map
 
+#Map``
 tmx_data = load_pygame("assets/Map/Collision Tile Mapping.tmx")
 spriteGroup = pygame.sprite.Group()
 layer = tmx_data.get_layer_by_name("Tile Layer 1")

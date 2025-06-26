@@ -13,10 +13,10 @@
 11. ~~enemy interaction (attacking)~~
 12. ~~Autopathing (workers and structures)~~
 13. ~~UI overlay~~
-14. create map sprite + mini map
-15. change hitboxes to be inside sprites
+14. ~~create map sprite + mini map~~
+15. ~~change hitboxes to be inside sprites~~
 16. worker spread out command
-17. command UI
+17. ~~command UI~~
 18. create sprites
 19. create basic AI (hard coded)
 20. Elevation mechanics (flying units and terrain)

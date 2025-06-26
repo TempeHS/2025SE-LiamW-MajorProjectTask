@@ -272,7 +272,8 @@ class CameraGroup(pygame.sprite.Group):
         scaled_surf = pygame.transform.scale(self.internal_surf, self.internal_surf_size_vector * self.zoom_scale)
         scaled_rect = scaled_surf.get_rect(center=(self.half_width, self.half_height))
         self.display_surface.blit(scaled_surf, scaled_rect)
-        pygame.draw.rect(self.display_surface, (0, 255, 0), self.camera_rect, 5)
+        #camera_rect
+        #pygame.draw.rect(self.display_surface, (0, 255, 0), self.camera_rect, 5)
 
 
 class Pathfinder(Object):

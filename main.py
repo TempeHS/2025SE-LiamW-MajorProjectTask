@@ -52,7 +52,7 @@ workerlist = Class.CameraGroup(Map)
 Base = Class.Base("base","Me",1000,100,0,Map,screen,1300,300,workerlist,cameralist.zoom_scale)
 Structure = Class.Structure("structure","Me",1000,100,0,Map,screen,1450,450, unitlist, cameralist.zoom_scale)
 Unit = Class.Unit("unit","Me",300,100,5,4,Map,screen,1360,360, cameralist.zoom_scale,0,0)
-Resource = Class.Resource("resource","Neutral",Map,screen,1000,100,10, cameralist.zoom_scale)
+Resource = Class.Resource("resource","Neutral",Map,screen,1000,150,10, cameralist.zoom_scale)
 Worker = Class.Worker("worker","Me",200,100,5,4,Map,screen,1200,200, cameralist.zoom_scale,0,0)
 Enemy = Class.Unit("unitE","Enemy",300,100,5,4,Map,screen,1200,900, cameralist.zoom_scale,0,0)
 structurelist.add(Base,Structure)
@@ -88,7 +88,6 @@ while running:
                 if attacking is True:
                     eventH.attackHandler(cameralist.zoom_scale,structurelist, unitlist, resourcelist, workerlist,offset,internal_offset,screen)
                     testdraw = True
-
                 
         if event.type == pygame.KEYDOWN:
             #all keyboard inputs

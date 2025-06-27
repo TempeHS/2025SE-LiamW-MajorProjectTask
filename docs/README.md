@@ -8,3 +8,4 @@
 
 ## How to run program
 ![console run command](static/images/console%20command%20run.png)
+

@@ -55,6 +55,19 @@ When a structure is selected, the user is now able to command these structures b
 If you more down from where all the red sprites are, there is a purple unit. This purple unit is the "enemy" which are the opponents in the game. Selected units can be pathed down to it. By press "A" on the keyboard and right clicking on a valid tile, they will "attack move". If the unit is "in range" (a set area of which an attack will occur) they will "attack" the enemy. The enemy unit will then lose health in their "healthbar" UI and the green bar will decrease. Once this bar is empty, the unit will "die" and disappear from the screen
 ![attack system](/assets\READMEassets\Attack.mkv.gif)
 
+
+### Extra User Documentation
+- you have to move to the top left to see the area
+- if the game runs too slowly you can deload the map its in the custow_draw() function in Classes.CameraGroup "self.internal_surf.blit(ground,ground_offset - (1810,700) + (0,512))" just comment it out
+
+Hotkeys:
+- Move: Right Click
+- Attack Move: A + Right Click
+- Selection: Left Click
+- Produce: B
+- Cancel: C
+
+
 ## Sprint Summary
 
 ### Sprint 1: 

@@ -228,7 +228,7 @@ class CameraGroup(pygame.sprite.Group):
         #self.internal_surf.blit(self.ground_surf, ground_offset)
 
         ground = pygame.transform.scale(self.ground,(6144,3072))
-        #self.internal_surf.blit(ground,ground_offset - (1810,700) + (0,512))
+        self.internal_surf.blit(ground,ground_offset - (1810,700) + (0,512))
         
         #self.draw_grid(self.internal_surf, ground_offset)
 

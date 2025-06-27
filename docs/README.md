@@ -17,7 +17,7 @@ note: once in the game to move in the top left direction to reach the main game 
 
 ### Camera Movement
 
-By moving your camera to the sides of the screen the camera will be moved around the play area. By moving you mouse into the top left corner you can reach the main map and where the sprites are.
+By moving your camera to the sides of the screen the camera will be moved around the play area. By moving you mouse into the top left corner you can reach the main map and where the sprites are. By using the scroll wheel you can zoom in and out on the gameplay area.
 ![camera movement](static/images/console%20command%20run.png)
 
 ### Selection UI
